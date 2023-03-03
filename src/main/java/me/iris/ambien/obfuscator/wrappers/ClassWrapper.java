@@ -1,0 +1,71 @@
+package me.iris.ambien.obfuscator.wrappers;
+
+import lombok.Getter;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+@SuppressWarnings("unchecked")
+public class ClassWrapper {
+    @Getter
+    private final String name;
+
+    @Getter
+    private final ClassNode node;
+
+    public ClassWrapper(String name, ClassNode node) {
+        this.name = name;
+        this.node = node;
+    }
+
+    public boolean isInterface() {
+        return (node.access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE;
+    }
+
+    public MethodNode getClassInit() {
+        for (final Object methodObj : node.methods) {
+            final MethodNode methodNode = (MethodNode)methodObj;
+            if (methodNode.name.equals("<init>"))
+                return methodNode;
+        }
+
+        return null;
+    }
+
+    public CopyOnWriteArrayList<MethodNode> getMethods() {
+        final CopyOnWriteArrayList<MethodNode> methods = new CopyOnWriteArrayList<>();
+        for (final Object methodObj : node.methods) {
+            methods.add((MethodNode)methodObj);
+        }
+
+        return methods;
+    }
+
+    public CopyOnWriteArrayList<FieldNode> getFields() {
+        final CopyOnWriteArrayList<FieldNode> fields = new CopyOnWriteArrayList<>();
+        for (final Object fieldObj : node.fields) {
+            fields.add((FieldNode)fieldObj);
+        }
+
+        return fields;
+    }
+
+    public void addField(final FieldNode fieldNode) {
+        node.fields.add(fieldNode);
+    }
+
+    public void addMethod(final MethodNode methodNode) {
+        node.methods.add(methodNode);
+    }
+
+    public byte[] toByteArray() {
+        final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        node.accept(writer);
+        return writer.toByteArray();
+    }
+}

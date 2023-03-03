@@ -1,0 +1,47 @@
+import org.gradle.api.java.archives.internal.DefaultManifest
+
+plugins {
+    id 'java'
+}
+
+group 'me.iris'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    compileOnly 'org.projectlombok:lombok:1.18.26'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.26'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
+
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'org.ow2.asm:asm-all:5.2'
+    implementation 'org.slf4j:slf4j-api:2.0.6'
+    implementation 'org.slf4j:slf4j-simple:2.0.6'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar.manifest {
+    attributes('Main-Class': 'me.iris.ambien.Ambien')
+}
+
+tasks.register('buildTestJar', Jar) {
+    manifest {
+        attributes(
+                "Main-Class": "me.iris.testjar.Entry"
+        )
+    }
+
+    archiveClassifier.set('test')
+    from sourceSets.test.output
+}
