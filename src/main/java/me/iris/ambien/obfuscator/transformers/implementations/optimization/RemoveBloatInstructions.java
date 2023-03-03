@@ -19,7 +19,7 @@ public class RemoveBloatInstructions extends Transformer {
     public void transform(JarWrapper wrapper) {
         // Check for settings conflicts
         if (Ambien.get.transformerManager.getTransformer("junk-code").isEnabled())
-            throw new SettingConflictException("The remove-debug-info transformer can't be used alongside the junk-code transformer. (Disable one)");
+            throw new SettingConflictException("The remove-bloat-instructions transformer can't be used alongside the junk-code transformer. (Disable one)");
 
         // Remove NOP & line instructions
         wrapper.getClasses().forEach(classWrapper ->
