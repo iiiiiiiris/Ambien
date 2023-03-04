@@ -1,5 +1,5 @@
 <h1 align="center">Ambien</h1>
-<h4 align="center">A Java 8 bytecode obfuscator</h4>
+<h5 align="center">Another Java bytecode obfuscator</h5>
 
 # Usage
 Download the latest jar [here](https://github.com/iiiiiiiris/Ambien/releases/latest)
