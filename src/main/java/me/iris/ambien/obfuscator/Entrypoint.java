@@ -1,8 +1,6 @@
 package me.iris.ambien.obfuscator;
 
 import me.iris.ambien.obfuscator.settings.Settings;
-import me.iris.ambien.obfuscator.utilities.jar.JarExporter;
-import me.iris.ambien.obfuscator.utilities.jar.JarImporter;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 
 import java.io.File;
@@ -20,12 +18,12 @@ public class Entrypoint {
             Settings.load(new File(args[0]));
 
         // Import specified jar
-        final JarWrapper wrapper = JarImporter.importJar(new File(Ambien.get.inputJar));
+        final JarWrapper wrapper = new JarWrapper().from(new File(Ambien.get.inputJar));
 
         // Transform jar
         final JarWrapper transformedWrapper = Ambien.get.transform(wrapper);
 
         // Export specified jar
-        JarExporter.exportJar(transformedWrapper);
+        transformedWrapper.to();
     }
 }

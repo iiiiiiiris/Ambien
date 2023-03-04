@@ -7,7 +7,8 @@ public class ClassBuilder {
     private String name = null,
             superName = null,
             signature = null;
-    private int access = -1;
+    private int access = -1,
+            version = Opcodes.V1_8;
 
     public ClassBuilder setName(final String name) {
         this.name = name;
@@ -29,9 +30,14 @@ public class ClassBuilder {
         return this;
     }
 
+    public ClassBuilder setVersion(final int version) {
+        this.version = version;
+        return this;
+    }
+
     public ClassNode buildNode() {
         final ClassNode node = new ClassNode();
-        node.version = Opcodes.V1_8;
+        node.version = version;
         node.name = name;
         node.superName = this.superName == null ? "java/lang/Object" : superName;
         node.signature = signature;

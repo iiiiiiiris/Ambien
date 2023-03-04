@@ -31,6 +31,7 @@ public class TransformerManager {
                 new Comment(),
                 new FakeClasses(),
                 new AggressiveCompression(),
+                new RedHerring(),
 
                 // Optimization
                 new RemoveBloatInstructions(),
