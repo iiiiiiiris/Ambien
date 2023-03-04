@@ -11,8 +11,9 @@ Run the Ambien jar with the path to your settings file as the first & only argum
 **Note to developers: to see debug output, add `-Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG` to vm options**
 
 # Planned features
-- String encryption
-- More control flow transformers
+- [ ] String encryption
+- [ ] More control flow transformers
+- [ ] invoke dynamics
 
 # Dependencies
 ###### [Lombok](https://projectlombok.org/)
