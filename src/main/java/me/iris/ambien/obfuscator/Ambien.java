@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Ambien {
     public static final Ambien get = new Ambien();
@@ -19,6 +21,7 @@ public class Ambien {
     public TransformerManager transformerManager;
 
     public String inputJar, outputJar;
+    public final List<String> excludedClasses = new ArrayList<>();
 
     public void init(String[] args) {
         // Check for new version

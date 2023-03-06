@@ -1,6 +1,7 @@
 package me.iris.ambien.obfuscator.wrappers;
 
 import lombok.Getter;
+import me.iris.ambien.obfuscator.Ambien;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
@@ -36,10 +37,12 @@ public class ClassWrapper {
         return null;
     }
 
-    public CopyOnWriteArrayList<MethodNode> getMethods() {
+    public CopyOnWriteArrayList<MethodNode> getTransformableMethods() {
         final CopyOnWriteArrayList<MethodNode> methods = new CopyOnWriteArrayList<>();
         for (final Object methodObj : node.methods) {
-            methods.add((MethodNode)methodObj);
+            final MethodNode methodNode = (MethodNode)methodObj;
+            if (!Ambien.get.excludedClasses.contains(methodNode.name))
+                methods.add(methodNode);
         }
 
         return methods;

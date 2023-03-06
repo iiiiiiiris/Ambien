@@ -23,7 +23,7 @@ public class RemoveBloatInstructions extends Transformer {
 
         // Remove NOP & line instructions
         wrapper.getClasses().forEach(classWrapper ->
-                classWrapper.getMethods().forEach(methodNode ->
+                classWrapper.getTransformableMethods().forEach(methodNode ->
                         Arrays.stream(methodNode.instructions.toArray()).forEach(insn -> {
             if (insn instanceof LineNumberNode || insn.getOpcode() == NOP)
                 methodNode.instructions.remove(insn);
