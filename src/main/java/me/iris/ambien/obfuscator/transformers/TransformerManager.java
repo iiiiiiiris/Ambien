@@ -3,6 +3,7 @@ package me.iris.ambien.obfuscator.transformers;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.implementations.exploits.*;
 import me.iris.ambien.obfuscator.transformers.implementations.flow.*;
+import me.iris.ambien.obfuscator.transformers.implementations.miscellaneous.*;
 import me.iris.ambien.obfuscator.transformers.implementations.optimization.*;
 import me.iris.ambien.obfuscator.transformers.implementations.packaging.*;
 
@@ -21,6 +22,7 @@ public class TransformerManager {
                 new JunkCode(),
                 new Shuffle(),
                 new LineNumberRandomizer(),
+                new FakeJumps(),
 
                 // Exploits
                 new Crasher(),
@@ -35,7 +37,10 @@ public class TransformerManager {
 
                 // Optimization
                 new RemoveBloatInstructions(),
-                new RemoveDebugInfo()
+                new RemoveDebugInfo(),
+
+                // Miscellaneous
+                new LocalVariableRenamer()
         ));
     }
 

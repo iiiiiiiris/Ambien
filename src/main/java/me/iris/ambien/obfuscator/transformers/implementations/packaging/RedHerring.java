@@ -33,7 +33,6 @@ public class RedHerring extends Transformer {
      */
     public static final BooleanSetting corrupt = new BooleanSetting("corrupt", false);
 
-    // TODO: Implement the library shit
     @Override
     public void transform(JarWrapper wrapper) {
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
