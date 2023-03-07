@@ -20,8 +20,13 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.26'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
 
+    implementation 'org.ow2.asm:asm:9.4'
+    implementation 'org.ow2.asm:asm-commons:9.4'
+    implementation 'org.ow2.asm:asm-tree:9.4'
+    implementation 'org.ow2.asm:asm-analysis:9.4'
+    implementation 'org.ow2.asm:asm-util:9.4'
+
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'org.ow2.asm:asm-all:5.2'
     implementation 'org.slf4j:slf4j-api:2.0.6'
     implementation 'org.slf4j:slf4j-simple:2.0.6'
 }
