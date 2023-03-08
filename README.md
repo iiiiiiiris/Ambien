@@ -10,6 +10,15 @@ Run the Ambien jar with the path to your settings file as the first & only argum
 
 **Note to developers: to see debug output, add `-Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG` to vm options**
 
+# Media
+Crasher
+
+![cfr](./web/media/crasher-cfr.png)
+
+![fernflower](./web/media/crasher-fernflower.png)
+
+![procyon](./web/media/crasher-procyon.png)
+
 # Planned features
 - [ ] String encryption
 - [ ] More control flow transformers
