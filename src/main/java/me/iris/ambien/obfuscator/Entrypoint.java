@@ -25,5 +25,8 @@ public class Entrypoint {
 
         // Export specified jar
         transformedWrapper.to();
+
+        // Debugging
+        Ambien.LOGGER.debug("finished obfuscation");
     }
 }

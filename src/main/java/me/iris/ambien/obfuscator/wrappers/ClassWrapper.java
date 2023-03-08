@@ -10,7 +10,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings("CastCanBeRemovedNarrowingVariableType")
 public class ClassWrapper {
     @Getter
     private final String name;

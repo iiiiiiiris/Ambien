@@ -23,6 +23,7 @@ public class TransformerManager {
                 new Shuffle(),
                 new LineNumberRandomizer(),
                 new FakeJumps(),
+                new NumberXor(),
 
                 // Exploits
                 new Crasher(),
