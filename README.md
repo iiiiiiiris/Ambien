@@ -23,6 +23,7 @@ Crasher
 - [ ] String encryption
 - [ ] More control flow transformers
 - [ ] invoke dynamics
+- [ ] make this readme actually look nice (crazy idea)
 
 # Dependencies
 ###### [Lombok](https://projectlombok.org/)
