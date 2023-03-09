@@ -20,6 +20,11 @@ Run the Ambien jar with the path to your settings file as the first & only argum
 **Note to developers: to see debug output, add `-Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG` to vm options**
 
 # Media
+
+Flow & string obfuscation
+
+![flow-str](./web/media/flow-obf-1.2.0-beta.png)
+
 Crasher
 
 ![cfr](./web/media/crasher-cfr.png)
@@ -27,6 +32,8 @@ Crasher
 ![fernflower](./web/media/crasher-fernflower.png)
 
 ![procyon](./web/media/crasher-procyon.png)
+
+###### As of  1.2.0-beta release
 
 # Dependencies
 ###### [Lombok](https://projectlombok.org/)
