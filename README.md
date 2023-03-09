@@ -20,7 +20,7 @@ Crasher
 ![procyon](./web/media/crasher-procyon.png)
 
 # Planned features
-- [ ] String encryption
+- [x] String encryption
 - [ ] More control flow transformers
 - [ ] invoke dynamics
 - [ ] make this readme actually look nice (crazy idea)

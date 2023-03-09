@@ -24,6 +24,7 @@ public class TransformerManager {
                 new LineNumberRandomizer(),
                 new FakeJumps(),
                 new NumberXor(),
+                new StringEncryption(),
 
                 // Exploits
                 new Crasher(),

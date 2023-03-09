@@ -30,9 +30,9 @@ public class NumberXor extends Transformer {
                 // TODO: Implement this for longs
                 Arrays.stream(methodNode.instructions.toArray())
                         .filter(insn -> insn.getOpcode() == BIPUSH)
+                        .map(insn -> (IntInsnNode)insn)
                         .forEach(insn -> {
                             // Int instruction node
-                            final IntInsnNode intNode = (IntInsnNode)insn;
 
                             // TODO: check if the operand is a min/max value
 
@@ -44,7 +44,7 @@ public class NumberXor extends Transformer {
                                     xor2 = MathUtil.randomInt(1, Short.MAX_VALUE);
 
                             // Apply xor to operand
-                            final int xorVal = intNode.operand ^ xor;
+                            final int xorVal = insn.operand ^ xor;
                             final int xorVal2 = xorVal ^ xor2;
 
                             if (aggressive.isEnabled()) {
