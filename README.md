@@ -1,5 +1,14 @@
-<h1 align="center">Ambien</h1>
-<h5 align="center">Another Java bytecode obfuscator</h5>
+# Ambien
+
+# Features
+|   Feature   | Implemented |
+| ----------- | ----------- |
+| String encryption       | partial |
+| Flow obfuscation        | partial |
+| Invoke dynamics         | 🚫 |
+| Crashers                | ✅ |
+| Miscellaneous ZIP stuff | ✅ |
+###### As of 1.2.0-beta release
 
 # Usage
 Download the latest jar [here](https://github.com/iiiiiiiris/Ambien/releases/latest)
@@ -18,12 +27,6 @@ Crasher
 ![fernflower](./web/media/crasher-fernflower.png)
 
 ![procyon](./web/media/crasher-procyon.png)
-
-# Planned features
-- [x] String encryption
-- [ ] More control flow transformers
-- [ ] invoke dynamics
-- [ ] make this readme actually look nice (crazy idea)
 
 # Dependencies
 ###### [Lombok](https://projectlombok.org/)
