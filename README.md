@@ -9,7 +9,8 @@
 | Invoke dynamics         | 🚫 |
 | Crashers                | ✅ |
 | Miscellaneous ZIP stuff | ✅ |
-###### As of 1.2.0-beta release
+| GUI                     | 🚫 |
+###### As of 1.2.1-beta release
 ###### Unimplemented features will be added at some point
 
 # Usage
@@ -36,7 +37,7 @@ Crasher
 
 ![procyon](./web/media/crasher-procyon.png)
 
-###### As of  1.2.0-beta release
+###### As of 1.2.1-beta release
 
 # Dependencies
 ###### [Lombok](https://projectlombok.org/)
