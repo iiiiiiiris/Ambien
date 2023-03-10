@@ -1,7 +1,6 @@
 package me.iris.ambien.obfuscator.transformers.implementations.packaging;
 
 import me.iris.ambien.obfuscator.builders.ClassBuilder;
-import me.iris.ambien.obfuscator.builders.MethodBuilder;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
@@ -10,9 +9,7 @@ import me.iris.ambien.obfuscator.utilities.IOUtil;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
 import me.iris.ambien.obfuscator.wrappers.ClassWrapper;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

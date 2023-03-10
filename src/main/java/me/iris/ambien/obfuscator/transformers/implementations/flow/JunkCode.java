@@ -4,6 +4,7 @@ import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.settings.data.implementations.NumberSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
@@ -16,6 +17,7 @@ import java.util.Iterator;
  */
 @TransformerInfo(
         name = "junk-code",
+        ordinal = Ordinal.LOW,
         category = Category.CONTROL_FLOW
 )
 public class JunkCode extends Transformer {
@@ -34,7 +36,7 @@ public class JunkCode extends Transformer {
 
     @Override
     public void transform(JarWrapper wrapper) {
-        wrapper.getClasses().forEach(classWrapper -> {
+        getClasses(wrapper).forEach(classWrapper -> {
             classWrapper.getTransformableMethods().forEach(methodNode -> {
                 // Inject NOP instructions
                 if (nopInsns.isEnabled())

@@ -5,10 +5,12 @@
 | ----------- | ----------- |
 | String encryption       | partial |
 | Flow obfuscation        | partial |
+| Number obfuscation      | partial |
 | Invoke dynamics         | 🚫 |
 | Crashers                | ✅ |
 | Miscellaneous ZIP stuff | ✅ |
 ###### As of 1.2.0-beta release
+###### Unimplemented features will be added at some point
 
 # Usage
 Download the latest jar [here](https://github.com/iiiiiiiris/Ambien/releases/latest)

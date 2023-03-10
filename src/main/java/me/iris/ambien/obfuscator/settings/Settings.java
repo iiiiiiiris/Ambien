@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.settings;
 
 import com.google.gson.*;
 import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.settings.data.implementations.ListSetting;
 import me.iris.ambien.obfuscator.settings.data.implementations.NumberSetting;
 import me.iris.ambien.obfuscator.settings.data.implementations.StringSetting;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
@@ -46,6 +47,8 @@ public class Settings {
                     transformerObj.addProperty(setting.getName(), ((StringSetting)setting).getValue());
                 else if (setting instanceof NumberSetting)
                     transformerObj.addProperty(setting.getName(), ((NumberSetting<?>)setting).getValue());
+                else if (setting instanceof ListSetting)
+                    transformerObj.add(setting.getName(), new JsonArray());
             }
 
             // Add transformer object to transformers array
@@ -128,6 +131,9 @@ public class Settings {
                         numberSetting.setValue(element.getAsFloat());
                     else if (numberSetting.getValue() instanceof Double)
                         numberSetting.setValue(element.getAsDouble());
+                } else if (setting instanceof ListSetting) {
+                    final ListSetting listSetting = (ListSetting)setting;
+                    final JsonArray array = element.getAsJsonArray();
                 }
             }
         }

@@ -1,6 +1,7 @@
 package me.iris.ambien.obfuscator.transformers.implementations.flow;
 
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
@@ -11,12 +12,13 @@ import java.util.Arrays;
 
 @TransformerInfo(
         name = "line-number-randomizer",
+        ordinal = Ordinal.LOW,
         category = Category.CONTROL_FLOW
 )
 public class LineNumberRandomizer extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
-        wrapper.getClasses().forEach(classWrapper -> {
+        getClasses(wrapper).forEach(classWrapper -> {
             classWrapper.getTransformableMethods().forEach(methodNode -> {
                 Arrays.stream(methodNode.instructions.toArray()).
                         filter(insn -> insn instanceof LineNumberNode).

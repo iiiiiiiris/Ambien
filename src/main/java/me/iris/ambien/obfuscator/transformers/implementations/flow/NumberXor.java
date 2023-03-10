@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.flow;
 
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 
 @TransformerInfo(
         name = "number-xor",
+        ordinal = Ordinal.HIGH,
         category = Category.CONTROL_FLOW
 )
 public class NumberXor extends Transformer {
@@ -22,7 +24,8 @@ public class NumberXor extends Transformer {
 
     @Override
     public void transform(JarWrapper wrapper) {
-        wrapper.getClasses().forEach(classWrapper -> {
+        getClasses(wrapper).forEach(classWrapper -> {
+            System.out.println(classWrapper.getNode().name);
             classWrapper.getTransformableMethods().forEach(methodNode -> {
                 // ignore empty methods
                 if (methodNode.instructions == null || methodNode.instructions.size() == 0) return;

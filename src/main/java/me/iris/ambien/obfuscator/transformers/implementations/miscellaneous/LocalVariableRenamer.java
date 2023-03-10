@@ -1,6 +1,7 @@
 package me.iris.ambien.obfuscator.transformers.implementations.miscellaneous;
 
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
@@ -13,12 +14,13 @@ import org.objectweb.asm.tree.LocalVariableNode;
  */
 @TransformerInfo(
         name = "local-variable-renamer",
+        ordinal = Ordinal.LOW,
         category = Category.MISCELLANEOUS
 )
 public class LocalVariableRenamer extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
-        wrapper.getClasses().forEach(classWrapper -> {
+        getClasses(wrapper).forEach(classWrapper -> {
             classWrapper.getTransformableMethods().forEach(methodNode -> {
                 for (Object localVarObj : methodNode.localVariables) {
                     final LocalVariableNode localVarNode = (LocalVariableNode)localVarObj;

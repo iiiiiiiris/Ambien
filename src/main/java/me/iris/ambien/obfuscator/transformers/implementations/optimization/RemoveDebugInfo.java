@@ -21,7 +21,7 @@ public class RemoveDebugInfo extends Transformer {
             throw new SettingConflictException("The remove-debug-info transformer can't be used while using the junk-signatures setting in the crasher transformer. (Disable one)");
 
         // Remove debug info from classes
-        wrapper.getClasses().forEach(classWrapper -> {
+        getClasses(wrapper).forEach(classWrapper -> {
             final ClassNode classNode = classWrapper.getNode();
             classNode.sourceDebug = "";
             classNode.sourceFile = "";

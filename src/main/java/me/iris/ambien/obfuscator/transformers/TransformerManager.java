@@ -7,9 +7,7 @@ import me.iris.ambien.obfuscator.transformers.implementations.miscellaneous.*;
 import me.iris.ambien.obfuscator.transformers.implementations.optimization.*;
 import me.iris.ambien.obfuscator.transformers.implementations.packaging.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class TransformerManager {
     private final List<Transformer> transformers;
@@ -44,6 +42,9 @@ public class TransformerManager {
                 // Miscellaneous
                 new LocalVariableRenamer()
         ));
+
+        // Sort transformers by ordinal
+        transformers.sort(Comparator.comparingInt(transformer -> -transformer.getOrdinal().getIdx()));
     }
 
     public List<Transformer> getTransformers() {

@@ -12,9 +12,10 @@ public class Entrypoint {
         Ambien.get.init(args);
 
         // Create settings file if one wasn't provided or load provided settings from arg
-        if (args.length == 0)
+        if (args.length == 0) {
             Settings.create();
-        else
+            return;
+        } else
             Settings.load(new File(args[0]));
 
         // Import specified jar

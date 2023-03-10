@@ -18,7 +18,7 @@ import org.objectweb.asm.tree.*;
 public class FakeJumps extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
-        wrapper.getClasses().forEach(classWrapper -> {
+        getClasses(wrapper).forEach(classWrapper -> {
             classWrapper.getTransformableMethods().forEach(methodNode -> {
                 injectFakeVarJump(classWrapper, methodNode);
             });

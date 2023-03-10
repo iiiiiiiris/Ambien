@@ -22,7 +22,7 @@ public class RemoveBloatInstructions extends Transformer {
             throw new SettingConflictException("The remove-bloat-instructions transformer can't be used alongside the junk-code transformer. (Disable one)");
 
         // Remove NOP & line instructions
-        wrapper.getClasses().forEach(classWrapper ->
+        getClasses(wrapper).forEach(classWrapper ->
                 classWrapper.getTransformableMethods().forEach(methodNode ->
                         Arrays.stream(methodNode.instructions.toArray()).forEach(insn -> {
             if (insn instanceof LineNumberNode || insn.getOpcode() == NOP)
