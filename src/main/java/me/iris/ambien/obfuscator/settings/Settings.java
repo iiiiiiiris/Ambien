@@ -117,23 +117,30 @@ public class Settings {
             // Assume rest of the entries are settings of the transformer
             for (Setting<?> setting : transformer.getSettings()) {
                 final JsonElement element = transformerObj.get(setting.getName());
-                if (setting instanceof BooleanSetting)
-                    ((BooleanSetting)setting).setEnabled(element.getAsBoolean());
-                else if (setting instanceof StringSetting)
-                    ((StringSetting)setting).setValue(element.getAsString());
-                else if (setting instanceof NumberSetting) {
-                    final NumberSetting numberSetting = (NumberSetting)setting;
-                    if (numberSetting.getValue() instanceof Integer)
-                        numberSetting.setValue(element.getAsInt());
-                    else if (numberSetting.getValue() instanceof Long)
-                        numberSetting.setValue(element.getAsLong());
-                    else if (numberSetting.getValue() instanceof Float)
-                        numberSetting.setValue(element.getAsFloat());
-                    else if (numberSetting.getValue() instanceof Double)
-                        numberSetting.setValue(element.getAsDouble());
-                } else if (setting instanceof ListSetting) {
-                    final ListSetting listSetting = (ListSetting)setting;
-                    final JsonArray array = element.getAsJsonArray();
+                try {
+                    if (setting instanceof BooleanSetting)
+                        ((BooleanSetting)setting).setEnabled(element.getAsBoolean());
+                    else if (setting instanceof StringSetting)
+                        ((StringSetting)setting).setValue(element.getAsString());
+                    else if (setting instanceof NumberSetting) {
+                        final NumberSetting numberSetting = (NumberSetting)setting;
+                        if (numberSetting.getValue() instanceof Integer)
+                            numberSetting.setValue(element.getAsInt());
+                        else if (numberSetting.getValue() instanceof Long)
+                            numberSetting.setValue(element.getAsLong());
+                        else if (numberSetting.getValue() instanceof Float)
+                            numberSetting.setValue(element.getAsFloat());
+                        else if (numberSetting.getValue() instanceof Double)
+                            numberSetting.setValue(element.getAsDouble());
+                    } else if (setting instanceof ListSetting) {
+                        final ListSetting listSetting = (ListSetting)setting;
+                        final JsonArray array = element.getAsJsonArray();
+                        for (int j = 0; j < array.size(); j++) {
+                            listSetting.getOptions().add(array.get(j).getAsString());
+                        }
+                    }
+                } catch (NullPointerException e) {
+                    Ambien.LOGGER.error("Setting \"{}\" not found for transformer {}", setting.getName(), transformerName);
                 }
             }
         }

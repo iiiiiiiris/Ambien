@@ -23,6 +23,7 @@ public class TransformerManager {
                 new FakeJumps(),
                 new NumberXor(),
                 new StringEncryption(),
+                new MathStackMangler(),
 
                 // Exploits
                 new Crasher(),

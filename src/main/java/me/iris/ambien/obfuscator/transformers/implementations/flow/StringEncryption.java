@@ -27,6 +27,12 @@ public class StringEncryption extends Transformer {
      */
     public final BooleanSetting encode = new BooleanSetting("encode", false);
 
+    /**
+     * Adds an invalid variable descriptor to the decoded string
+     * This causes procyon to fail to decompile the method (No other use outside of this reason)
+     */
+    public final BooleanSetting invalidEncodedVarDescriptor = new BooleanSetting("invalid-encoded-var-descriptor", true);
+
     private static final String DECRYPTION_DESCRIPTOR = "(Ljava/lang/String;I)Ljava/lang/String;";
 
     @Override
@@ -66,7 +72,6 @@ public class StringEncryption extends Transformer {
                             final InsnList list = new InsnList();
 
                             // Decrypt string
-                            //list.add(new IntInsnNode(BIPUSH, key));
                             list.add(new LdcInsnNode(key));
                             list.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name,
                                     decryptorMethod.name, DECRYPTION_DESCRIPTOR, false));
@@ -155,6 +160,11 @@ public class StringEncryption extends Transformer {
                 node.visitVarInsn(ALOAD, 3); // load string builder
                 node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false); // convert string builder to a string
                 node.visitInsn(ARETURN); // return string
+
+                // Add invalid descriptor
+                if (invalidEncodedVarDescriptor.isEnabled())
+                    node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+                            "L/java/lang/String;", null, labelA, labelE, 2);
             } else {
                 final Label labelA = new Label(),
                         labelB = new Label(),
