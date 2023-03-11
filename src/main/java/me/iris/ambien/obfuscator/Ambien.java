@@ -16,7 +16,7 @@ public class Ambien {
     public static final Ambien get = new Ambien();
 
     public static final Logger LOGGER = LoggerFactory.getLogger("Ambien");
-    public static final String VERSION = "1.2.1", CLASSIFIER = "beta";
+    public static final String VERSION = "1.2.2", CLASSIFIER = "beta";
 
     public TransformerManager transformerManager;
 
