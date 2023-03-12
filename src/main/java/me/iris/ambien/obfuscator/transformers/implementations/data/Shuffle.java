@@ -1,4 +1,4 @@
-package me.iris.ambien.obfuscator.transformers.implementations.flow;
+package me.iris.ambien.obfuscator.transformers.implementations.data;
 
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
@@ -15,7 +15,7 @@ import java.util.Collections;
 @TransformerInfo(
         name = "shuffle",
         ordinal = Ordinal.LOW,
-        category = Category.CONTROL_FLOW
+        category = Category.DATA
 )
 public class Shuffle extends Transformer {
     @Override

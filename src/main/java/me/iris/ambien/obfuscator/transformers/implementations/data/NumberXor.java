@@ -1,4 +1,4 @@
-package me.iris.ambien.obfuscator.transformers.implementations.flow;
+package me.iris.ambien.obfuscator.transformers.implementations.data;
 
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
@@ -14,7 +14,7 @@ import java.util.Arrays;
 @TransformerInfo(
         name = "number-xor",
         ordinal = Ordinal.HIGH,
-        category = Category.CONTROL_FLOW
+        category = Category.DATA
 )
 public class NumberXor extends Transformer {
     /**

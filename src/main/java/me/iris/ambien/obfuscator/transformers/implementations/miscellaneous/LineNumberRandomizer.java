@@ -1,4 +1,4 @@
-package me.iris.ambien.obfuscator.transformers.implementations.flow;
+package me.iris.ambien.obfuscator.transformers.implementations.miscellaneous;
 
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
@@ -13,7 +13,7 @@ import java.util.Arrays;
 @TransformerInfo(
         name = "line-number-randomizer",
         ordinal = Ordinal.LOW,
-        category = Category.CONTROL_FLOW
+        category = Category.MISCELLANEOUS
 )
 public class LineNumberRandomizer extends Transformer {
     @Override

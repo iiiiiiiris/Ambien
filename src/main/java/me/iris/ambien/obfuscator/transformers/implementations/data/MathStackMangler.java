@@ -1,4 +1,4 @@
-package me.iris.ambien.obfuscator.transformers.implementations.flow;
+package me.iris.ambien.obfuscator.transformers.implementations.data;
 
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @TransformerInfo(
         name = "math-stack-mangler",
-        category = Category.CONTROL_FLOW
+        category = Category.DATA
 )
 public class MathStackMangler extends Transformer {
     @Override

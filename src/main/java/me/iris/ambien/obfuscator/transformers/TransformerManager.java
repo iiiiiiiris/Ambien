@@ -1,6 +1,10 @@
 package me.iris.ambien.obfuscator.transformers;
 
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
+import me.iris.ambien.obfuscator.transformers.implementations.data.MathStackMangler;
+import me.iris.ambien.obfuscator.transformers.implementations.data.NumberXor;
+import me.iris.ambien.obfuscator.transformers.implementations.data.Shuffle;
+import me.iris.ambien.obfuscator.transformers.implementations.data.StringEncryption;
 import me.iris.ambien.obfuscator.transformers.implementations.exploits.*;
 import me.iris.ambien.obfuscator.transformers.implementations.flow.*;
 import me.iris.ambien.obfuscator.transformers.implementations.miscellaneous.*;
@@ -18,12 +22,13 @@ public class TransformerManager {
         this.transformers.addAll(Arrays.asList(
                 // Control flow
                 new JunkCode(),
-                new Shuffle(),
-                new LineNumberRandomizer(),
                 new FakeJumps(),
+
+                // Data
                 new NumberXor(),
                 new StringEncryption(),
                 new MathStackMangler(),
+                new Shuffle(),
 
                 // Exploits
                 new Crasher(),
@@ -41,7 +46,8 @@ public class TransformerManager {
                 new RemoveDebugInfo(),
 
                 // Miscellaneous
-                new LocalVariableRenamer()
+                new LocalVariableRenamer(),
+                new LineNumberRandomizer()
         ));
 
         // Sort transformers by ordinal

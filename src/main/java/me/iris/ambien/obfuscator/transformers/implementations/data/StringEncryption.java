@@ -1,4 +1,4 @@
-package me.iris.ambien.obfuscator.transformers.implementations.flow;
+package me.iris.ambien.obfuscator.transformers.implementations.data;
 
 import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
@@ -19,7 +19,7 @@ import java.util.Base64;
 @TransformerInfo(
         name = "string-encryption",
         ordinal = Ordinal.HIGH,
-        category = Category.CONTROL_FLOW
+        category = Category.DATA
 )
 public class StringEncryption extends Transformer {
     /**

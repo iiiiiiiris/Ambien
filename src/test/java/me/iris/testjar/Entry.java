@@ -10,5 +10,11 @@ public class Entry {
         for (int i = 0; i < 15; i++) {
             System.out.println(i);
         }
+
+        try {
+            System.out.println("uhmm");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
