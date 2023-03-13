@@ -13,14 +13,14 @@ import org.objectweb.asm.tree.*;
 import java.util.Iterator;
 
 /**
- * Adds code that doesn't do anything to pre-existing methods
+ * Adds instructions that don't do anything
  */
 @TransformerInfo(
-        name = "junk-code",
+        name = "useless-instructions",
         ordinal = Ordinal.LOW,
         category = Category.CONTROL_FLOW
 )
-public class JunkCode extends Transformer {
+public class UselessInstructions extends Transformer {
     /**
      * Adds NOP instructions
      */

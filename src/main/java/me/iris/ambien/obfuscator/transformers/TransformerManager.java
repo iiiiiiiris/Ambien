@@ -21,8 +21,9 @@ public class TransformerManager {
 
         this.transformers.addAll(Arrays.asList(
                 // Control flow
-                new JunkCode(),
+                new UselessInstructions(),
                 new FakeJumps(),
+                new GotoShenanigans(),
 
                 // Data
                 new NumberXor(),

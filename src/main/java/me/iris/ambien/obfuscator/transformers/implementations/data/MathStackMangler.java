@@ -21,6 +21,7 @@ public class MathStackMangler extends Transformer {
                 classWrapper.getTransformableMethods().forEach(methodNode -> {
                     if (methodNode.instructions == null || methodNode.instructions.size() == 0) return;
                     AtomicInteger counter = new AtomicInteger(0);
+                    // TODO: Check if there are other datatypes on the stack
                     Arrays.stream(methodNode.instructions.toArray())
                             .filter(insn -> insn.getOpcode() == BIPUSH)
                             .map(insn -> (IntInsnNode)insn)
