@@ -3,6 +3,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.packaging;
 import me.iris.ambien.obfuscator.builders.ClassBuilder;
 import me.iris.ambien.obfuscator.settings.data.implementations.NumberSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.StringUtil;
@@ -15,7 +16,8 @@ import org.objectweb.asm.tree.ClassNode;
  */
 @TransformerInfo(
         name = "fake-classes",
-        category = Category.PACKAGING
+        category = Category.PACKAGING,
+        stability = Stability.STABLE
 )
 public class FakeClasses extends Transformer {
     public final NumberSetting<Integer> classes = new NumberSetting<>("classes", 50);

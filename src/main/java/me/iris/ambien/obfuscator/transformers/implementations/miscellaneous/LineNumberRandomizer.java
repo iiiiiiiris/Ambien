@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.miscellaneous;
 
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
@@ -12,8 +13,9 @@ import java.util.Arrays;
 
 @TransformerInfo(
         name = "line-number-randomizer",
-        ordinal = Ordinal.LOW,
-        category = Category.MISCELLANEOUS
+        category = Category.MISCELLANEOUS,
+        stability = Stability.STABLE,
+        ordinal = Ordinal.LOW
 )
 public class LineNumberRandomizer extends Transformer {
     @Override

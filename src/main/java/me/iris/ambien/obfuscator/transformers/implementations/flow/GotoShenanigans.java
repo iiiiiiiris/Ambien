@@ -3,6 +3,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.flow;
 import me.iris.ambien.obfuscator.builders.FieldBuilder;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
@@ -13,13 +14,13 @@ import org.objectweb.asm.tree.*;
 import java.util.Arrays;
 
 /**
- * Adds extra steps to jumping to another label
+ * Adds extra steps before jumping to another label
  * And no, I couldn't think of a better name for this...
- * but this is your main control flow obfuscation :)
  */
 @TransformerInfo(
         name = "goto-shenanigans",
-        category = Category.CONTROL_FLOW
+        category = Category.CONTROL_FLOW,
+        stability = Stability.STABLE
 )
 public class GotoShenanigans extends Transformer {
     public final BooleanSetting aggressive = new BooleanSetting("aggressive", false);

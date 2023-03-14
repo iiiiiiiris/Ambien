@@ -3,6 +3,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.optimization;
 import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.exceptions.SettingConflictException;
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.transformers.implementations.exploits.Crasher;
@@ -11,7 +12,8 @@ import org.objectweb.asm.tree.ClassNode;
 
 @TransformerInfo(
         name = "remove-debug-info",
-        category = Category.OPTIMIZATION
+        category = Category.OPTIMIZATION,
+        stability = Stability.STABLE
 )
 public class RemoveDebugInfo extends Transformer {
     @Override

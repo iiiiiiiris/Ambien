@@ -5,6 +5,7 @@ import me.iris.ambien.obfuscator.builders.MethodBuilder;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
@@ -18,8 +19,9 @@ import java.util.Base64;
 
 @TransformerInfo(
         name = "string-encryption",
-        ordinal = Ordinal.HIGH,
-        category = Category.DATA
+        category = Category.DATA,
+        stability = Stability.STABLE,
+        ordinal = Ordinal.HIGH
 )
 public class StringEncryption extends Transformer {
     /**

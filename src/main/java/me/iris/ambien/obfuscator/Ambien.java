@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator;
 
 import com.google.gson.JsonObject;
 import me.iris.ambien.obfuscator.transformers.TransformerManager;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.utilities.WebUtil;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
@@ -23,10 +24,11 @@ public class Ambien {
     public String inputJar, outputJar;
     public final List<String> excludedClasses = new ArrayList<>();
 
-    public void init(String[] args) {
+    public void init(boolean ignoreVersionCheck) {
         // Check for new version
         LOGGER.info("Ambien | {}", VERSION);
-        checkVersion();
+        if (!ignoreVersionCheck)
+            checkVersion();
 
         // Initialize transformers
         transformerManager = new TransformerManager();
@@ -48,9 +50,10 @@ public class Ambien {
         }
     }
 
-    public JarWrapper transform(JarWrapper wrapper) {
+    public JarWrapper transform(JarWrapper wrapper, boolean experimentalTransformers) {
         for (Transformer transformer : transformerManager.getTransformers()) {
             if (!transformer.isEnabled()) continue;
+            if (!experimentalTransformers && transformer.getStability().equals(Stability.EXPERIMENTAL)) continue;
             transformer.transform(wrapper);
         }
 

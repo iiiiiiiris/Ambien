@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.packaging;
 
 import me.iris.ambien.obfuscator.settings.data.implementations.StringSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
@@ -11,7 +12,8 @@ import me.iris.ambien.obfuscator.wrappers.JarWrapper;
  */
 @TransformerInfo(
         name = "comment",
-        category = Category.PACKAGING
+        category = Category.PACKAGING,
+        stability = Stability.STABLE
 )
 public class Comment extends Transformer {
     public static final StringSetting commentText = new StringSetting("comment-text", "Obfuscated by Ambien");

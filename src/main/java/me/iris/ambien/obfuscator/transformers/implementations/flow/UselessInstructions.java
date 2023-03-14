@@ -5,6 +5,7 @@ import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.settings.data.implementations.NumberSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
@@ -17,8 +18,9 @@ import java.util.Iterator;
  */
 @TransformerInfo(
         name = "useless-instructions",
-        ordinal = Ordinal.LOW,
-        category = Category.CONTROL_FLOW
+        category = Category.CONTROL_FLOW,
+        stability = Stability.STABLE,
+        ordinal = Ordinal.LOW
 )
 public class UselessInstructions extends Transformer {
     /**

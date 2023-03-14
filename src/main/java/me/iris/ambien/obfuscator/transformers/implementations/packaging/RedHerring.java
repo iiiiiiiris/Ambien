@@ -3,6 +3,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.packaging;
 import me.iris.ambien.obfuscator.builders.ClassBuilder;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.IOUtil;
@@ -22,7 +23,8 @@ import java.util.jar.JarOutputStream;
  */
 @TransformerInfo(
         name = "red-herring",
-        category = Category.PACKAGING
+        category = Category.PACKAGING,
+        stability = Stability.STABLE
 )
 public class RedHerring extends Transformer {
     /**

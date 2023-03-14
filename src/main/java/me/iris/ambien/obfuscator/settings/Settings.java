@@ -8,18 +8,16 @@ import me.iris.ambien.obfuscator.settings.data.implementations.StringSetting;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.settings.data.Setting;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
+import me.iris.ambien.obfuscator.utilities.StringUtil;
 
 import java.io.*;
 
 public class Settings {
-    private static final File DEFAULT_SETTINGS_FILE = new File("settings.json");
-
     public static void create() throws IOException {
-        // Make sure the default settings file doesn't already exist
-        if (DEFAULT_SETTINGS_FILE.exists()) {
-            Ambien.LOGGER.error("Default settings file already exists.");
-            return;
-        }
+        // Create file to write to
+        File outFile = new File("settings.json");
+        if (outFile.exists())
+            outFile = new File("settings-" + StringUtil.randomString(7) + ".json");
 
         // Global object everything will be stored in
         final JsonObject obj = new JsonObject();
@@ -65,7 +63,7 @@ public class Settings {
         final String jsonStr = gson.toJson(obj);
 
         // Write to file
-        final FileWriter writer = new FileWriter(DEFAULT_SETTINGS_FILE);
+        final FileWriter writer = new FileWriter(outFile);
         writer.write(jsonStr);
         writer.flush();
         writer.close();

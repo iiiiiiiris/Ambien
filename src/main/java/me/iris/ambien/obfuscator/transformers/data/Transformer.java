@@ -18,6 +18,7 @@ public abstract class Transformer implements Opcodes {
     private final String name = getClass().getAnnotation(TransformerInfo.class).name();
 
     private final Category category = getClass().getAnnotation(TransformerInfo.class).category();
+    private final Stability stability = getClass().getAnnotation(TransformerInfo.class).stability();
     private final Ordinal ordinal = getClass().getAnnotation(TransformerInfo.class).ordinal();
 
     private final boolean enabledByDefault = getClass().getAnnotation(TransformerInfo.class).enabledByDefault();
@@ -49,6 +50,10 @@ public abstract class Transformer implements Opcodes {
 
     public String getName() {
         return name;
+    }
+
+    public Stability getStability() {
+        return stability;
     }
 
     public Ordinal getOrdinal() {

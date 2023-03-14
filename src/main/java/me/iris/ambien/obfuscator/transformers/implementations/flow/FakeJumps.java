@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.flow;
 
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
@@ -13,7 +14,8 @@ import org.objectweb.asm.tree.*;
 
 @TransformerInfo(
         name = "fake-jumps",
-        category = Category.CONTROL_FLOW
+        category = Category.CONTROL_FLOW,
+        stability = Stability.STABLE
 )
 public class FakeJumps extends Transformer {
     @Override

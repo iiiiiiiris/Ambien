@@ -3,6 +3,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.optimization;
 import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.exceptions.SettingConflictException;
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
@@ -12,7 +13,8 @@ import java.util.Arrays;
 
 @TransformerInfo(
         name = "remove-bloat-instructions",
-        category = Category.OPTIMIZATION
+        category = Category.OPTIMIZATION,
+        stability = Stability.STABLE
 )
 public class RemoveBloatInstructions extends Transformer {
     @Override

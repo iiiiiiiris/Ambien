@@ -1,6 +1,7 @@
 package me.iris.ambien.obfuscator.transformers.implementations.data;
 
 import me.iris.ambien.obfuscator.transformers.data.Category;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
@@ -12,7 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @TransformerInfo(
         name = "math-stack-mangler",
-        category = Category.DATA
+        category = Category.DATA,
+        stability = Stability.EXPERIMENTAL
 )
 public class MathStackMangler extends Transformer {
     @Override

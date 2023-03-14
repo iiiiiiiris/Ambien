@@ -3,6 +3,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.data;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
@@ -13,8 +14,9 @@ import java.util.Arrays;
 
 @TransformerInfo(
         name = "number-xor",
-        ordinal = Ordinal.HIGH,
-        category = Category.DATA
+        category = Category.DATA,
+        stability = Stability.STABLE,
+        ordinal = Ordinal.HIGH
 )
 public class NumberXor extends Transformer {
     /**
