@@ -16,6 +16,7 @@ import org.objectweb.asm.tree.*;
 
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @TransformerInfo(
         name = "string-encryption",
@@ -29,12 +30,6 @@ public class StringEncryption extends Transformer {
      */
     public final BooleanSetting encode = new BooleanSetting("encode", false);
 
-    /**
-     * Adds an invalid variable descriptor to the decoded string
-     * This causes procyon to fail to decompile the method (No other use outside of this reason)
-     */
-    public final BooleanSetting invalidEncodedVarDescriptor = new BooleanSetting("invalid-encoded-var-descriptor", true);
-
     private static final String DECRYPTION_DESCRIPTOR = "(Ljava/lang/String;I)Ljava/lang/String;";
 
     @Override
@@ -46,6 +41,10 @@ public class StringEncryption extends Transformer {
                 // ignore empty methods
                 if (methodNode.instructions == null || methodNode.instructions.size() == 0) return;
 
+                // counter for adding locals
+                final AtomicInteger localCounter = new AtomicInteger(methodNode.maxLocals);
+
+                // Find strings to encrypt
                 Arrays.stream(methodNode.instructions.toArray())
                         .filter(insn -> insn.getOpcode() == LDC && insn instanceof LdcInsnNode)
                         .map(insn -> (LdcInsnNode)insn)
@@ -55,11 +54,13 @@ public class StringEncryption extends Transformer {
                             // Generate key
                             final int key = MathUtil.randomInt(1, Short.MAX_VALUE);
 
-                            // Encrypt string w/ basic shitty xor
-                            // Also apply base64 encoding if enabled
+                            // Encrypt string w/ basic shitty xor & encode string if enabled
                             String encryptedStr = encrypt((String)ldc.cst, key);
                             if (encode.isEnabled())
                                 encryptedStr = encode(encryptedStr);
+
+                            // Get bytes of encrypted string
+                            final byte[] bytes = encryptedStr.getBytes();
 
                             // Build decryption method
                             final MethodNode decryptorMethod = buildDecryptor();
@@ -68,18 +69,38 @@ public class StringEncryption extends Transformer {
                             // debugging
                             Ambien.LOGGER.debug("encrypting \"{}\" with key {}", ldc.cst, key);
 
-                            // Update cst
-                            ldc.cst = encryptedStr;
-
                             final InsnList list = new InsnList();
 
-                            // Decrypt string
+                            // Create new byte array
+                            list.add(new IntInsnNode(BIPUSH, bytes.length));
+                            list.add(new IntInsnNode(NEWARRAY, T_BYTE));
+
+                            // Add bytes to array
+                            for (int i = 0; i < bytes.length; i++) {
+                                final byte b = bytes[i];
+                                list.add(new InsnNode(DUP));
+                                list.add(new IntInsnNode(BIPUSH, i));
+                                list.add(new IntInsnNode(BIPUSH, b));
+                                list.add(new InsnNode(BASTORE));
+                            }
+
+                            // Store byte array
+                            final int byteArrayIdx = localCounter.incrementAndGet();
+                            list.add(new VarInsnNode(ASTORE, byteArrayIdx));
+
+                            // Create new string w/ byte array
+                            list.add(new TypeInsnNode(NEW, "java/lang/String"));
+                            list.add(new InsnNode(DUP));
+                            list.add(new VarInsnNode(ALOAD, byteArrayIdx));
+                            list.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/String", "<init>", "([B)V", false));
+
+                            // Add call to decrypt method w/ key
                             list.add(new LdcInsnNode(key));
                             list.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name,
                                     decryptorMethod.name, DECRYPTION_DESCRIPTOR, false));
 
-                            // Add decryption call after ldc (its already on the stack)
-                            methodNode.instructions.insert(ldc, list);
+                            methodNode.instructions.insertBefore(ldc, list);
+                            methodNode.instructions.remove(ldc);
                         });
             });
         });
@@ -162,11 +183,6 @@ public class StringEncryption extends Transformer {
                 node.visitVarInsn(ALOAD, 3); // load string builder
                 node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false); // convert string builder to a string
                 node.visitInsn(ARETURN); // return string
-
-                // Add invalid descriptor
-                if (invalidEncodedVarDescriptor.isEnabled())
-                    node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
-                            "L/java/lang/String;", null, labelA, labelE, 2);
             } else {
                 final Label labelA = new Label(),
                         labelB = new Label(),
