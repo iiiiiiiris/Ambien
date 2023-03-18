@@ -1,8 +1,7 @@
 package me.iris.ambien.obfuscator.transformers.implementations.data;
 
-import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.builders.FieldBuilder;
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
-import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
@@ -10,12 +9,14 @@ import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
 import me.iris.ambien.obfuscator.utilities.StringUtil;
+import me.iris.ambien.obfuscator.wrappers.ClassWrapper;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.*;
 
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @TransformerInfo(
@@ -25,17 +26,15 @@ import java.util.concurrent.atomic.AtomicInteger;
         ordinal = Ordinal.HIGH
 )
 public class StringEncryption extends Transformer {
-    /**
-     * Encodes the encrypted string w/ base-64
-     */
-    public final BooleanSetting encode = new BooleanSetting("encode", false);
-
-    private static final String DECRYPTION_DESCRIPTOR = "(Ljava/lang/String;I)Ljava/lang/String;";
+    // TODO: Randomize descriptor argument order & add decoy args
+    private static final String DECRYPTOR_DESCRIPTOR = "(Ljava/lang/String;II)Ljava/lang/String;";
 
     @Override
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
             if (classWrapper.isInterface()) return;
+
+            // TODO: Encrypt string fields
 
             classWrapper.getTransformableMethods().forEach(methodNode -> {
                 // ignore empty methods
@@ -44,60 +43,26 @@ public class StringEncryption extends Transformer {
                 // counter for adding locals
                 final AtomicInteger localCounter = new AtomicInteger(methodNode.maxLocals);
 
-                // Find strings to encrypt
                 Arrays.stream(methodNode.instructions.toArray())
                         .filter(insn -> insn.getOpcode() == LDC && insn instanceof LdcInsnNode)
                         .map(insn -> (LdcInsnNode)insn)
                         .forEach(ldc -> {
                             if (!(ldc.cst instanceof String)) return;
 
-                            // Generate key
-                            final int key = MathUtil.randomInt(1, Short.MAX_VALUE);
+                            // Generate encryption keys
+                            final int[] keys = MathUtil.getTwoRandomInts(1, Short.MAX_VALUE);
 
-                            // Encrypt string w/ basic shitty xor & encode string if enabled
-                            String encryptedStr = encrypt((String)ldc.cst, key);
-                            if (encode.isEnabled())
-                                encryptedStr = encode(encryptedStr);
+                            // Encrypt string
+                            final String encryptedLDC = encrypt((String)ldc.cst, keys[0], keys[1]);
+                            ldc.cst = encryptedLDC;
 
-                            // Get bytes of encrypted string
-                            final byte[] bytes = encryptedStr.getBytes();
+                            // Build & add decryptor method
+                            final MethodNode decryptorNode = buildDecryptor();
+                            classWrapper.addMethod(decryptorNode);
 
-                            // Build decryption method
-                            final MethodNode decryptorMethod = buildDecryptor();
-                            classWrapper.addMethod(decryptorMethod);
-
-                            // debugging
-                            Ambien.LOGGER.debug("encrypting \"{}\" with key {}", ldc.cst, key);
-
+                            // Add decryption routine
                             final InsnList list = new InsnList();
-
-                            // Create new byte array
-                            list.add(new IntInsnNode(BIPUSH, bytes.length));
-                            list.add(new IntInsnNode(NEWARRAY, T_BYTE));
-
-                            // Add bytes to array
-                            for (int i = 0; i < bytes.length; i++) {
-                                final byte b = bytes[i];
-                                list.add(new InsnNode(DUP));
-                                list.add(new IntInsnNode(BIPUSH, i));
-                                list.add(new IntInsnNode(BIPUSH, b));
-                                list.add(new InsnNode(BASTORE));
-                            }
-
-                            // Store byte array
-                            final int byteArrayIdx = localCounter.incrementAndGet();
-                            list.add(new VarInsnNode(ASTORE, byteArrayIdx));
-
-                            // Create new string w/ byte array
-                            list.add(new TypeInsnNode(NEW, "java/lang/String"));
-                            list.add(new InsnNode(DUP));
-                            list.add(new VarInsnNode(ALOAD, byteArrayIdx));
-                            list.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/String", "<init>", "([B)V", false));
-
-                            // Add call to decrypt method w/ key
-                            list.add(new LdcInsnNode(key));
-                            list.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name,
-                                    decryptorMethod.name, DECRYPTION_DESCRIPTOR, false));
+                            list.add(buildDecryptionRoutine(classWrapper, decryptorNode, encryptedLDC, keys[0], keys[1], localCounter));
 
                             methodNode.instructions.insertBefore(ldc, list);
                             methodNode.instructions.remove(ldc);
@@ -106,132 +71,189 @@ public class StringEncryption extends Transformer {
         });
     }
 
-    private String encrypt(final String str, final int key) {
+    private String encrypt(String str, int key1, int randSeed) {
+        // Create a random instance with a specific seed
+        final Random rand = new Random(randSeed);
+
+        // Generate a random int in range (1-MAX_SHORT_VAL)
+        final int key2 = 1 + (rand.nextInt(Short.MAX_VALUE));
+
+        // Xor keys for a single key
+        final int key = key1 ^ key2;
+
+        // Apply xor to string
         final char[] chars = str.toCharArray();
         for (int i = 0; i < chars.length; i++) {
             chars[i] ^= key;
         }
 
-        return new String(chars);
+        // Encode string w/ base64
+        final String encryptedString = new String(chars);
+        final byte[] bytes = encryptedString.getBytes();
+        return new String(Base64.getEncoder().encode(bytes));
     }
 
-    private String encode(final String str) {
-        return new String(Base64.getEncoder().encode(str.getBytes()));
+    private InsnList buildDecryptionRoutine(ClassWrapper classWrapper, final MethodNode decryptionMethod,
+                                            String encryptedString, int key1, int key2, final AtomicInteger localCounter) {
+        // Add first key as a field
+        final String keyFieldName = StringUtil.randomString(MathUtil.randomInt(10, 50));
+        final FieldBuilder fieldBuilder = new FieldBuilder()
+                .setName(keyFieldName)
+                .setDesc("I")
+                .setValue(key1)
+                .setAccess(ACC_PRIVATE | ACC_STATIC);
+        final FieldNode fieldNode = fieldBuilder.buildNode();
+        classWrapper.addField(fieldNode);
+
+        // List for our decryption routine
+        final InsnList list = new InsnList();
+
+        // Convert encrypted string into byte array
+        final byte[] bytes = encryptedString.getBytes();
+
+        // Create new byte array
+        list.add(new IntInsnNode(BIPUSH, bytes.length));
+        list.add(new IntInsnNode(NEWARRAY, T_BYTE));
+
+        // Add bytes to array
+        for (int i = 0; i < bytes.length; i++) {
+            final byte b = bytes[i];
+            list.add(new InsnNode(DUP));
+            list.add(new IntInsnNode(BIPUSH, i));
+            list.add(new IntInsnNode(BIPUSH, b));
+            list.add(new InsnNode(BASTORE));
+        }
+
+        // Store byte array
+        final int byteArrayIdx = localCounter.incrementAndGet();
+        list.add(new VarInsnNode(ASTORE, byteArrayIdx));
+
+        // Create new string w/ byte array
+        list.add(new TypeInsnNode(NEW, "java/lang/String"));
+        list.add(new InsnNode(DUP));
+        list.add(new VarInsnNode(ALOAD, byteArrayIdx));
+        list.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/String", "<init>", "([B)V", false));
+
+        // Get the first decryption key
+        list.add(new FieldInsnNode(GETSTATIC, classWrapper.getNode().name, keyFieldName, "I"));
+
+        // Push second decryption key onto stack]
+        list.add(new LdcInsnNode(key2));
+
+        // Add decryptor method
+        list.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name, decryptionMethod.name, decryptionMethod.desc, false));
+
+        return list;
     }
 
     private MethodNode buildDecryptor() {
         final MethodBuilder builder = new MethodBuilder()
-                .setName(StringUtil.randomString(MathUtil.randomInt(15, 50)))
-                .setAccess(ACC_PUBLIC | ACC_STATIC)
-                .setDesc(DECRYPTION_DESCRIPTOR);
+                .setName(StringUtil.randomString(MathUtil.randomInt(10, 50)))
+                .setAccess(ACC_PRIVATE | ACC_STATIC)
+                .setDesc(DECRYPTOR_DESCRIPTOR);
         final MethodNode node = builder.buildNode();
 
-        // added comments to every instruction because it's easier to read at a quick glance (im retarded)
-        // codes kinda messy
         node.visitCode(); {
-            if (encode.isEnabled()) {
-                final Label labelA = new Label(),
-                        labelB = new Label(),
-                        labelC = new Label(),
-                        labelD = new Label(),
-                        labelE = new Label(),
-                        labelF = new Label(),
-                        labelG = new Label();
+            // labels
+            final Label labelA = new Label(),
+                    labelB = new Label(),
+                    labelC = new Label(),
+                    labelD = new Label(),
+                    labelE = new Label(),
+                    labelF = new Label(),
+                    labelG = new Label(),
+                    labelH = new Label(),
+                    labelI = new Label(),
+                    labelJ = new Label();
 
-                node.visitLabel(labelA);
-                node.visitTypeInsn(NEW, "java/lang/String"); // create new string
-                node.visitInsn(DUP); // duplicate stack
-                node.visitMethodInsn(INVOKESTATIC, "java/util/Base64", "getDecoder", "()Ljava/util/Base64$Decoder;", false); // get decoder
-                node.visitVarInsn(ALOAD, 0); // load encoded string
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "getBytes", "()[B", false); // get bytes of encoded string
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/util/Base64$Decoder", "decode", "([B)[B", false); // decode string
-                node.visitMethodInsn(INVOKESPECIAL, "java/lang/String", "<init>", "([B)V", false); // initialize string w/ decoded value
-                node.visitVarInsn(ASTORE, 2); // store decoded string
+            // Create new random instance
+            node.visitLabel(labelA);
+            node.visitLineNumber(50, labelA);
+            node.visitTypeInsn(NEW, "java/util/Random"); // new random class
+            node.visitInsn(DUP); // duplicate stack
+            node.visitVarInsn(ILOAD, 2); // load rand seed
+            node.visitInsn(I2L); // int to long
+            node.visitMethodInsn(INVOKESPECIAL, "java/util/Random", "<init>", "(J)V", false); // initialize random w/ seed
+            node.visitVarInsn(ASTORE, 3); // store random instance @ index 3
 
-                node.visitLabel(labelB);
-                node.visitTypeInsn(NEW, "java/lang/StringBuilder"); // create new string builder
-                node.visitInsn(DUP); // duplicate stack
-                node.visitMethodInsn(INVOKESPECIAL, "java/lang/StringBuilder", "<init>", "()V", false); // initialize string builder
-                node.visitVarInsn(ASTORE, 3); // store string builder
+            // Generate "random" key
+            node.visitLabel(labelB);
+            node.visitLineNumber(51, labelB);
+            node.visitInsn(ICONST_0); // push 0
+            node.visitInsn(ICONST_1); // push 1
+            node.visitInsn(IXOR); // xor 0 w/ 1 (a ^= 1) a(ICONST_0) will become 1, cooler way of doing ICONST_1 on its own :))
+            node.visitVarInsn(ALOAD, 3); // load random instance
+            node.visitIntInsn(SIPUSH, 32767); // push 32767 onto stack (as a short)
+            node.visitMethodInsn(INVOKEVIRTUAL, "java/util/Random", "nextInt", "(I)I", false); // get next int
+            node.visitInsn(IADD); // add 1 & next int value
+            node.visitVarInsn(ISTORE, 4); // store second key @ index 4
 
-                node.visitLabel(labelC);
-                node.visitInsn(ICONST_0); // push 0 to stack
-                node.visitVarInsn(ISTORE, 4); // store 0 at 4 (index in loop)
+            // Generate a final key from key1 & "random" second key
+            node.visitLabel(labelC);
+            node.visitLineNumber(52, labelC);
+            node.visitVarInsn(ILOAD, 1); // load key1
+            node.visitVarInsn(ILOAD, 4); // load second "random" key
+            node.visitInsn(IXOR); // perform xor operation on keys
+            node.visitVarInsn(ISTORE, 5); // store final key @ index 5
 
-                node.visitLabel(labelD);
-                node.visitVarInsn(ILOAD, 4); // load loop index
-                node.visitVarInsn(ALOAD, 2); // load decoded string
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "length", "()I", false); // get length of decoded string
-                node.visitJumpInsn(IF_ICMPGE, labelG); // goto label g if the loop index equals the length of the decoded string
+            // decode encoded string
+            node.visitLabel(labelD);
+            node.visitLineNumber(54, labelD);
+            node.visitTypeInsn(NEW, "java/lang/String"); // create new string
+            node.visitInsn(DUP); // duplicate stack
+            node.visitMethodInsn(INVOKESTATIC, "java/util/Base64", "getDecoder", "()Ljava/util/Base64$Decoder;", false); // get decoder
+            node.visitVarInsn(ALOAD, 0); // load encoded string
+            node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "getBytes", "()[B", false); // get bytes of string
+            node.visitMethodInsn(INVOKEVIRTUAL, "java/util/Base64$Decoder", "decode", "([B)[B", false); // decode string
+            node.visitMethodInsn(INVOKESPECIAL, "java/lang/String", "<init>", "([B)V", false); // initialize new string w/ decoded string
+            node.visitVarInsn(ASTORE, 6); // store decoded string @ index 6
 
-                node.visitLabel(labelE);
-                node.visitVarInsn(ALOAD, 3); // load string builder
-                node.visitVarInsn(ALOAD, 2); // load decoded string
-                node.visitVarInsn(ILOAD, 4); // load loop index
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C", false); // get char of decoded string at loop index
-                node.visitVarInsn(ILOAD, 1); // load xor key
-                node.visitInsn(IXOR); // xor operation
-                node.visitInsn(I2C); // convert int to char
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(C)Ljava/lang/StringBuilder;", false); // append char to the string builder
-                node.visitInsn(POP); // clear stack
+            // convert decoded string into a char array
+            node.visitLabel(labelE);
+            node.visitLineNumber(55, labelE);
+            node.visitVarInsn(ALOAD, 6); // load decoded string
+            node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "toCharArray", "()[C", false); // get chars
+            node.visitVarInsn(ASTORE, 7); // store chars @ index 7
 
-                node.visitLabel(labelF);
-                node.visitIincInsn(4, 1); // increment loop index
-                node.visitJumpInsn(GOTO, labelD); // continue loop
+            // create & store index for looping through chars
+            node.visitLabel(labelF);
+            node.visitLineNumber(56, labelF);
+            node.visitInsn(ICONST_0);
+            node.visitVarInsn(ISTORE, 8); // store loop index @ index 8
 
-                node.visitLabel(labelG);
-                node.visitVarInsn(ALOAD, 3); // load string builder
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false); // convert string builder to a string
-                node.visitInsn(ARETURN); // return string
-            } else {
-                final Label labelA = new Label(),
-                        labelB = new Label(),
-                        labelC = new Label(),
-                        labelD = new Label(),
-                        labelE = new Label(),
-                        labelF = new Label();
+            // check if loop index > char array length
+            node.visitLabel(labelG);
+            node.visitVarInsn(ILOAD, 8); // load loop index
+            node.visitVarInsn(ALOAD, 7); // load char array
+            node.visitInsn(ARRAYLENGTH); // get length of array
+            node.visitJumpInsn(IF_ICMPGE, labelJ); // goto label j if they're the same
 
-                node.visitLabel(labelA);
-                node.visitLineNumber(34, labelA);
-                node.visitTypeInsn(NEW, "java/lang/StringBuilder"); // create new string builder
-                node.visitInsn(DUP); // duplicate stack
-                node.visitMethodInsn(INVOKESPECIAL, "java/lang/StringBuilder", "<init>", "()V", false); // initialize string builder
-                node.visitVarInsn(ASTORE, 2); // store stringbuilder
+            // xor char @ index of the loop
+            node.visitLabel(labelH);
+            node.visitLineNumber(57, labelH);
+            node.visitVarInsn(ALOAD, 7); // load char array
+            node.visitVarInsn(ILOAD, 8); // load loop index
+            node.visitInsn(DUP2); // duplicate these 2 (^) variables
+            node.visitInsn(CALOAD); // load char @ index
+            node.visitVarInsn(ILOAD, 5); // load final key
+            node.visitInsn(IXOR); // xor operation
+            node.visitInsn(I2C); // revert xor'd char back to a char
+            node.visitInsn(CASTORE); // store xor'd char in array
 
-                node.visitLabel(labelB);
-                node.visitLineNumber(38, labelB);
-                node.visitInsn(ICONST_0); // push 0 to stack
-                node.visitVarInsn(ISTORE, 3); // store 0 at 3 (index in loop)
+            // increment loop index
+            node.visitLabel(labelI);
+            node.visitLineNumber(56, labelI);
+            node.visitIincInsn(8, 1); // increment loop index (at index 8) by 1
+            node.visitJumpInsn(GOTO, labelG); // jump back to start of loop
 
-                node.visitLabel(labelC);
-                node.visitVarInsn(ILOAD, 3); // load loop index
-                node.visitVarInsn(ALOAD, 0); // load encrypted string
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "length", "()I", false); // get length of encrypted string
-                node.visitJumpInsn(IF_ICMPGE, labelF); // go to label f if the loop index equals the length of the encrypted string
-
-                node.visitLabel(labelD);
-                node.visitLineNumber(39, labelD);
-                node.visitVarInsn(ALOAD, 2); // load string builder
-                node.visitVarInsn(ALOAD, 0); // load encrypted string
-                node.visitVarInsn(ILOAD, 3); // load loop index
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "charAt", "(I)C", false); // get char of encrypted string at loop index
-                node.visitVarInsn(ILOAD, 1); // load xor key
-                node.visitInsn(IXOR); // xor operation
-                node.visitInsn(I2C); // convert int to char
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(C)Ljava/lang/StringBuilder;", false); // append char to string builder
-                node.visitInsn(POP); // clear stack
-
-                node.visitLabel(labelE);
-                node.visitLineNumber(38, labelE);
-                node.visitIincInsn(3, 1); // increment loop index
-                node.visitJumpInsn(GOTO, labelC); // continue loop
-
-                node.visitLabel(labelF);
-                node.visitLineNumber(42, labelF);
-                node.visitVarInsn(ALOAD, 2); // load string builder
-                node.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false); // convert string builder to a string
-                node.visitInsn(ARETURN); // return string
-            }
+            // return char array as a new string
+            node.visitLabel(labelJ);
+            node.visitLineNumber(60, labelJ);
+            node.visitTypeInsn(NEW, "java/lang/String"); // new string
+            node.visitInsn(DUP); // duplicate stack
+            node.visitVarInsn(ALOAD, 7); // load char array
+            node.visitMethodInsn(INVOKESPECIAL, "java/lang/String", "<init>", "([C)V", false); // initialize string
+            node.visitInsn(ARETURN);
         } node.visitEnd();
 
         return node;

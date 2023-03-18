@@ -6,6 +6,8 @@ import lombok.experimental.UtilityClass;
 public class StringUtil {
     private static final char[] CHARS = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm".toCharArray();
 
+    // TODO: Add some sort of manager for generating unique strings
+
     public String randomString(final int len) {
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < len; i++)
