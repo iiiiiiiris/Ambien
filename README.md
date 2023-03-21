@@ -3,26 +3,31 @@
 # Features
 |   Feature   | Implemented |
 | ----------- | ----------- |
-| String encryption       | partial |
-| Flow obfuscation        | partial |
+| String encryption       | ✅ |
 | Number obfuscation      | partial |
+| Flow obfuscation        | partial |
 | Invoke dynamics         | 🚫 |
 | Crashers                | ✅ |
 | Miscellaneous ZIP stuff | ✅ |
 | GUI                     | 🚫 |
-###### As of 1.2.1-beta release
+###### As of 1.3.0-beta release
 ###### Unimplemented features will be added at some point
 
 # Usage
 Download the latest jar [here](https://github.com/iiiiiiiris/Ambien/releases/latest)
 
-Run the jar with no args (it will generate a default config for you to edit)
+Run the jar using the `--create-config` argument to create a base config
 
-Run the Ambien jar with the path to your settings file as the first & only argument
+Then run the Ambien jar using the `-config` argument (including the path to your config)
+
+###### To see all the arguments Ambien offers, you can use the '-help' argument
+
 
 **Note to developers: to see debug output, add `-Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG` to vm options**
 
-# Media
+# Example obfuscation
+
+Example obfuscation of Ambien v1.3.0
 
 ## Original
 
@@ -35,12 +40,6 @@ Run the Ambien jar with the path to your settings file as the first & only argum
 
         for (int i = 0; i < 15; i++) {
             System.out.println(i);
-        }
-
-        try {
-            System.out.println("uhmm");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 ```
@@ -76,7 +75,7 @@ Full class decompilation can be seen [here](https://vip.ci/?947fc08f7460787b#ESh
 
 Transformer settings can be seen [here](https://vip.ci/?ffe80453b066b624#7Ap2R4ijWKupHNiNHqAhScaRSt11Zx5xKsPHWeEGXCwM)
 
-Crasher
+## Crasher
 
 ![cfr](./web/media/crasher-cfr.png)
 
