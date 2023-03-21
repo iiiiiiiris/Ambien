@@ -17,6 +17,7 @@ import org.objectweb.asm.tree.*;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @TransformerInfo(
@@ -36,6 +37,30 @@ public class StringEncryption extends Transformer {
 
             // TODO: Encrypt string fields
 
+            // Check if the class has a method w/ string we can encrypt
+            final AtomicBoolean hasStrings = new AtomicBoolean(false);
+            classWrapper.getTransformableMethods().forEach(methodNode -> {
+                // check if
+                for (AbstractInsnNode insn : methodNode.instructions) {
+                    if (insn.getOpcode() != LDC || !(insn instanceof LdcInsnNode)) continue;
+                    if (!(((LdcInsnNode)insn).cst instanceof String)) continue;
+                    hasStrings.set(true);
+                    break;
+                }
+            });
+
+            // No string found, ignore the class
+            if (!hasStrings.get()) return;
+
+            // Build & add decryptor method
+            final MethodNode decryptorNode = buildDecryptor();
+            classWrapper.addMethod(decryptorNode);
+
+            // Build & add byte array reverse method
+            final MethodNode arrReversenode = buildArrReverser();
+            classWrapper.addMethod(arrReversenode);
+
+            // Encrypt strings
             classWrapper.getTransformableMethods().forEach(methodNode -> {
                 // ignore empty methods
                 if (methodNode.instructions == null || methodNode.instructions.size() == 0) return;
@@ -47,6 +72,7 @@ public class StringEncryption extends Transformer {
                         .filter(insn -> insn.getOpcode() == LDC && insn instanceof LdcInsnNode)
                         .map(insn -> (LdcInsnNode)insn)
                         .forEach(ldc -> {
+                            // check if the ldc is a string
                             if (!(ldc.cst instanceof String)) return;
 
                             // Generate encryption keys
@@ -56,13 +82,9 @@ public class StringEncryption extends Transformer {
                             final String encryptedLDC = encrypt((String)ldc.cst, keys[0], keys[1]);
                             ldc.cst = encryptedLDC;
 
-                            // Build & add decryptor method
-                            final MethodNode decryptorNode = buildDecryptor();
-                            classWrapper.addMethod(decryptorNode);
-
                             // Add decryption routine
                             final InsnList list = new InsnList();
-                            list.add(buildDecryptionRoutine(classWrapper, decryptorNode, encryptedLDC, keys[0], keys[1], localCounter));
+                            list.add(buildDecryptionRoutine(classWrapper, arrReversenode, decryptorNode, encryptedLDC, keys[0], keys[1], localCounter));
 
                             methodNode.instructions.insertBefore(ldc, list);
                             methodNode.instructions.remove(ldc);
@@ -93,7 +115,16 @@ public class StringEncryption extends Transformer {
         return new String(Base64.getEncoder().encode(bytes));
     }
 
-    private InsnList buildDecryptionRoutine(ClassWrapper classWrapper, final MethodNode decryptionMethod,
+    private byte[] reverseArray(final byte[] arr) {
+        final byte[] reversed = new byte[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            reversed[i] = arr[arr.length - i - 1];
+        }
+
+        return reversed;
+    }
+
+    private InsnList buildDecryptionRoutine(ClassWrapper classWrapper, final MethodNode arrRevNode, final MethodNode decryptionNode,
                                             String encryptedString, int key1, int key2, final AtomicInteger localCounter) {
         // Add first key as a field
         final String keyFieldName = StringUtil.randomString(MathUtil.randomInt(10, 50));
@@ -109,7 +140,7 @@ public class StringEncryption extends Transformer {
         final InsnList list = new InsnList();
 
         // Convert encrypted string into byte array
-        final byte[] bytes = encryptedString.getBytes();
+        final byte[] bytes = reverseArray(encryptedString.getBytes());
 
         // Create new byte array
         list.add(new IntInsnNode(BIPUSH, bytes.length));
@@ -132,6 +163,7 @@ public class StringEncryption extends Transformer {
         list.add(new TypeInsnNode(NEW, "java/lang/String"));
         list.add(new InsnNode(DUP));
         list.add(new VarInsnNode(ALOAD, byteArrayIdx));
+        list.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name, arrRevNode.name, arrRevNode.desc, false));
         list.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/String", "<init>", "([B)V", false));
 
         // Get the first decryption key
@@ -141,9 +173,85 @@ public class StringEncryption extends Transformer {
         list.add(new LdcInsnNode(key2));
 
         // Add decryptor method
-        list.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name, decryptionMethod.name, decryptionMethod.desc, false));
+        list.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name, decryptionNode.name, decryptionNode.desc, false));
 
         return list;
+    }
+
+    private MethodNode buildArrReverser() {
+        final MethodBuilder builder = new MethodBuilder()
+                .setName(StringUtil.randomString(MathUtil.randomInt(10, 50)))
+                .setAccess(ACC_PRIVATE | ACC_STATIC)
+                .setDesc("([B)[B");
+        final MethodNode node = builder.buildNode();
+
+        node.visitCode(); {
+            // labels
+            final Label labelA = new Label(),
+                    labelB = new Label(),
+                    labelC = new Label(),
+                    labelD = new Label(),
+                    labelE = new Label(),
+                    labelF = new Label();
+
+            // create new empty array
+            node.visitLabel(labelA);
+            node.visitLineNumber(27, labelA);
+            node.visitVarInsn(ALOAD, 0); // load array arg
+            node.visitInsn(ARRAYLENGTH); // get length of array
+            node.visitIntInsn(NEWARRAY, T_BYTE); // create new byte array
+            node.visitVarInsn(ASTORE, 1); // create new array w/ length of array arg
+
+            // create idx
+            node.visitLabel(labelB);
+            node.visitLineNumber(28, labelB);
+            node.visitInsn(ICONST_0); // push 0 to stack
+            node.visitVarInsn(ISTORE, 2); // store idx
+
+            // check if the loop has finished
+            node.visitLabel(labelC);
+            node.visitVarInsn(ILOAD, 2);  // load idx
+            node.visitVarInsn(ALOAD, 0); // load array arg
+            node.visitInsn(ARRAYLENGTH);
+            node.visitJumpInsn(IF_ICMPGE, labelF);
+
+            // get byte at length - idx - 1
+            node.visitLabel(labelD);
+            node.visitLineNumber(29, labelD);
+            node.visitVarInsn(ALOAD, 1); // load reversed array
+            node.visitVarInsn(ILOAD, 2); // load idx
+            node.visitVarInsn(ALOAD, 0); // load arg array
+            node.visitVarInsn(ALOAD, 0); // load arg array again (to get length)
+            node.visitInsn(ARRAYLENGTH); // get length of arg array
+            node.visitVarInsn(ILOAD, 2); // load idx
+            node.visitInsn(ISUB); // subtract arg array length by loop idx
+            node.visitInsn(ICONST_1); // push 1 to stack
+            node.visitInsn(ISUB); // subtract by 1
+            node.visitInsn(BALOAD); // load byte in arg array at ^ that index
+            node.visitInsn(BASTORE); // store in reversed array
+
+            // goto to start of loop
+            node.visitLabel(labelE);
+            node.visitLineNumber(28, labelE);
+            node.visitIincInsn(2, 1); // increment loop idx by 1
+            node.visitJumpInsn(GOTO, labelC); // goto start of loop
+
+            // return reversed byte array
+            node.visitLabel(labelF);
+            node.visitLineNumber(32, labelF);
+            node.visitVarInsn(ALOAD, 1); // load reversed array
+            node.visitInsn(ARETURN); // return array
+
+            // add names to local variables
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "[B", null, labelA, labelD, 0);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "[B", null, labelA, labelF, 1);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "I", null, labelB, labelD, 2);
+        } node.visitEnd();
+
+        return node;
     }
 
     private MethodNode buildDecryptor() {
@@ -254,6 +362,26 @@ public class StringEncryption extends Transformer {
             node.visitVarInsn(ALOAD, 7); // load char array
             node.visitMethodInsn(INVOKESPECIAL, "java/lang/String", "<init>", "([C)V", false); // initialize string
             node.visitInsn(ARETURN);
+
+            // Add names to local variables
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "Ljava/lang/String;", null, labelD, labelD, 0);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "I", null, labelC, labelI, 1);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "I", null, labelA, labelA, 2);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "Ljava/util/Random;", null, labelA, labelB, 3);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "I", null, labelB, labelC, 4);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "I", null, labelC, labelH, 5);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "Ljava/lang/String;", null, labelD, labelE, 6);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "[C", null, labelE, labelJ, 7);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+                    "I", null, labelF, labelH, 8);
         } node.visitEnd();
 
         return node;
