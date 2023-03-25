@@ -21,4 +21,15 @@ public class StringUtil {
             builder.append(c);
         return builder.toString();
     }
+
+    public String build(final String[] strs) {
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < strs.length; i++) {
+            builder.append(strs[i]);
+            if (i != strs.length - 1)
+                builder.append(' ');
+        }
+
+        return builder.toString();
+    }
 }

@@ -74,6 +74,36 @@ public class JarWrapper {
         return this;
     }
 
+    public JarWrapper importLibrary(final String path) throws IOException {
+        // Convert file to jar file
+        final JarFile jarFile = new JarFile(path);
+        Ambien.LOGGER.info("Loading library: " + jarFile.getName());
+
+        // Get jar file entries
+        final Enumeration<JarEntry> entries = jarFile.entries();
+
+        // Enumerate
+        while (entries.hasMoreElements()) {
+            // Get element
+            final JarEntry entry = entries.nextElement();
+            final String name = entry.getName();
+            final InputStream stream = jarFile.getInputStream(entry);
+
+            // Load entry
+            if (name.endsWith(".class")) {
+                // Read stream into node
+                final ClassReader reader = new ClassReader(stream);
+                final ClassNode node = new ClassNode();
+                reader.accept(node, ClassReader.SKIP_FRAMES);
+
+                classes.add(new ClassWrapper(name, node));
+                Ambien.LOGGER.info("Loaded class: {}", name);
+            }
+        }
+
+        return this;
+    }
+
     public void to() throws IOException {
         // File writer for all our output streams
         final FileOutputStream fileOutputStream = new FileOutputStream(Ambien.get.outputJar);

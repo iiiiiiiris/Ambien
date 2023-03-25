@@ -27,7 +27,6 @@ public class NumberXor extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
-            System.out.println(classWrapper.getNode().name);
             classWrapper.getTransformableMethods().forEach(methodNode -> {
                 // ignore empty methods
                 if (methodNode.instructions == null || methodNode.instructions.size() == 0) return;

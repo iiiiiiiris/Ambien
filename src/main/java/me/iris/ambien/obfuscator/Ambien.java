@@ -17,12 +17,12 @@ public class Ambien {
     public static final Ambien get = new Ambien();
 
     public static final Logger LOGGER = LoggerFactory.getLogger("Ambien");
-    public static final String VERSION = "1.3.0", CLASSIFIER = "beta";
+    public static final String VERSION = "1.3.1", CLASSIFIER = "beta";
 
     public TransformerManager transformerManager;
 
     public String inputJar, outputJar;
-    public final List<String> excludedClasses = new ArrayList<>();
+    public final List<String> excludedClasses = new ArrayList<>(), libraries = new ArrayList<>();
 
     public void init(boolean ignoreVersionCheck) {
         // Check for new version

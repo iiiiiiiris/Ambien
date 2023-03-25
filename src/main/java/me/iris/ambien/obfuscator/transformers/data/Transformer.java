@@ -1,5 +1,6 @@
 package me.iris.ambien.obfuscator.transformers.data;
 
+import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.settings.data.implementations.ListSetting;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.settings.data.Setting;
@@ -28,7 +29,21 @@ public abstract class Transformer implements Opcodes {
     public abstract void transform(JarWrapper wrapper);
 
     protected List<ClassWrapper> getClasses(JarWrapper wrapper) {
-        return wrapper.getClasses().stream().filter(classWrapper -> !excludedClasses.getOptions().contains(classWrapper.getNode().name)).collect(Collectors.toList());
+        final List<String> exclusions = new ArrayList<>();
+        exclusions.addAll(excludedClasses.getOptions());
+        exclusions.addAll(Ambien.get.excludedClasses);
+
+        return wrapper.getClasses().stream().filter(classWrapper -> {
+            if (exclusions.contains(classWrapper.getNode().name))
+                return false;
+
+            for (final String exclusion : exclusions.stream().filter(exclusion -> exclusion.endsWith("/")).collect(Collectors.toList())) {
+                if (classWrapper.getNode().name.startsWith(exclusion))
+                    return false;
+            }
+
+            return true;
+        }).collect(Collectors.toList());
     }
 
     public List<Setting<?>> getSettings() {

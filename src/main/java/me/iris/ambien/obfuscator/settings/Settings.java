@@ -28,6 +28,7 @@ public class Settings {
         // Add string properties for input jar & output path
         obj.addProperty("input", "somejar.jar");
         obj.addProperty("output", "somejar-obfuscated.jar");
+        obj.add("libraries", new JsonArray());
         obj.add("exclusions", new JsonArray());
 
         // Array all transformers will be in
@@ -84,6 +85,14 @@ public class Settings {
         // Set input & output jar strings
         Ambien.get.inputJar = obj.get("input").getAsString();
         Ambien.get.outputJar = obj.get("output").getAsString();
+
+        // Get libraries
+        final JsonArray libraries = obj.get("libraries").getAsJsonArray();
+        for (int i = 0; i < libraries.size(); i++) {
+            final String libraryPath = libraries.get(i).getAsString();
+            Ambien.get.libraries.add(libraryPath);
+            Ambien.LOGGER.info("Added path for library: {}", libraryPath);
+        }
 
         // Get excluded classes
         final JsonArray exclusionArray = obj.get("exclusions").getAsJsonArray();
