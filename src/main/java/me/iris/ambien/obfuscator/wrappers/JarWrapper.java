@@ -59,7 +59,7 @@ public class JarWrapper {
                 final ClassNode node = new ClassNode();
                 reader.accept(node, ClassReader.SKIP_FRAMES);
 
-                classes.add(new ClassWrapper(name, node));
+                classes.add(new ClassWrapper(name, node, false));
                 Ambien.LOGGER.info("Loaded class: {}", name);
             } else if (name.endsWith("/"))
                 directories.add(name);
@@ -96,7 +96,7 @@ public class JarWrapper {
                 final ClassNode node = new ClassNode();
                 reader.accept(node, ClassReader.SKIP_FRAMES);
 
-                classes.add(new ClassWrapper(name, node));
+                classes.add(new ClassWrapper(name, node, true));
                 Ambien.LOGGER.info("Loaded class: {}", name);
             }
         }
@@ -147,6 +147,9 @@ public class JarWrapper {
 
         // Add classes
         classes.forEach(classWrapper -> {
+            // Ignore library classes
+            if (classWrapper.isLibraryClass()) return;
+
             try {
                 String name = classWrapper.getName();
                 if (Ambien.get.transformerManager.getTransformer("folder-classes").isEnabled())

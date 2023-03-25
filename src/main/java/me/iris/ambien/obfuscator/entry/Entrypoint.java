@@ -12,13 +12,13 @@ import java.io.IOException;
 public class Entrypoint {
     public static void main(String[] args) throws IOException {
         // print ascii
-        Ambien.LOGGER.info("          :::       :::   :::   ::::::::: ::::::::::: :::::::::: ::::    ::: ");
-        Ambien.LOGGER.info("       :+: :+:    :+:+: :+:+:  :+:    :+:    :+:     :+:        :+:+:   :+:  ");
-        Ambien.LOGGER.info("     +:+   +:+  +:+ +:+:+ +:+ +:+    +:+    +:+     +:+        :+:+:+  +:+   ");
-        Ambien.LOGGER.info("   +#++:++#++: +#+  +:+  +#+ +#++:++#+     +#+     +#++:++#   +#+ +:+ +#+    ");
-        Ambien.LOGGER.info("  +#+     +#+ +#+       +#+ +#+    +#+    +#+     +#+        +#+  +#+#+#     ");
-        Ambien.LOGGER.info(" #+#     #+# #+#       #+# #+#    #+#    #+#     #+#        #+#   #+#+#      ");
-        Ambien.LOGGER.info("###     ### ###       ### ######### ########### ########## ###    ####       ");
+        System.out.println("          :::       :::   :::   ::::::::: ::::::::::: :::::::::: ::::    ::: ");
+        System.out.println("       :+: :+:    :+:+: :+:+:  :+:    :+:    :+:     :+:        :+:+:   :+:  ");
+        System.out.println("     +:+   +:+  +:+ +:+:+ +:+ +:+    +:+    +:+     +:+        :+:+:+  +:+   ");
+        System.out.println("   +#++:++#++: +#+  +:+  +#+ +#++:++#+     +#+     +#++:++#   +#+ +:+ +#+    ");
+        System.out.println("  +#+     +#+ +#+       +#+ +#+    +#+    +#+     +#+        +#+  +#+#+#     ");
+        System.out.println(" #+#     #+# #+#       #+# #+#    #+#    #+#     #+#        #+#   #+#+#      ");
+        System.out.println("###     ### ###       ### ######### ########### ########## ###    ####       ");
 
         // Parse arguments
         final Args ambienArgs = new Args();

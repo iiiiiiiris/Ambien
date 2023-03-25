@@ -18,9 +18,13 @@ public class ClassWrapper {
     @Getter
     private final ClassNode node;
 
-    public ClassWrapper(String name, ClassNode node) {
+    @Getter
+    private final boolean isLibraryClass;
+
+    public ClassWrapper(String name, ClassNode node, boolean isLibraryClass) {
         this.name = name;
         this.node = node;
+        this.isLibraryClass = isLibraryClass;
     }
 
     public boolean isInterface() {

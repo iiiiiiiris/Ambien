@@ -30,7 +30,7 @@ public class FakeClasses extends Transformer {
                     setAccess(ACC_PUBLIC);
 
             final ClassNode node = builder.buildNode();
-            wrapper.getClasses().add(new ClassWrapper(node.name + ".class", node));
+            wrapper.getClasses().add(new ClassWrapper(node.name + ".class", node, false));
         }
     }
 }
