@@ -21,11 +21,13 @@ public class TransformerManager {
                 new UselessInstructions(),
                 new FakeJumps(),
                 new GotoShenanigans(),
+                new InvokeDynamics(),
 
                 // Data
-                new NumberXor(),
+                new NumberObfuscation(),
                 new StringEncryption(),
                 new Shuffle(),
+                new XorBooleans(),
 
                 // Exploits
                 new Crasher(),
@@ -44,7 +46,8 @@ public class TransformerManager {
 
                 // Miscellaneous
                 new LocalVariableRenamer(),
-                new LineNumberRandomizer()
+                new LineNumberRandomizer(),
+                new StaticMerger()
         ));
 
         // Sort transformers by ordinal

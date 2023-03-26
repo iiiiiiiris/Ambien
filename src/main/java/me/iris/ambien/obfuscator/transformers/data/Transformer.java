@@ -34,6 +34,9 @@ public abstract class Transformer implements Opcodes {
         exclusions.addAll(Ambien.get.excludedClasses);
 
         return wrapper.getClasses().stream().filter(classWrapper -> {
+            if (classWrapper.isLibraryClass())
+                return false;
+
             if (exclusions.contains(classWrapper.getNode().name))
                 return false;
 

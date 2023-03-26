@@ -1,20 +1,25 @@
 package me.iris.testjar;
 
 public class Entry {
-    public static void main(String[] args) {
-        final int someVar = 78;
-        System.out.println(someVar);
+    public static boolean uhhhh = true;
 
-        System.out.println("Yellow");
-
+    public static void main(String[] args) throws Throwable {
+        boolean plaaaaaaaay = false;
         for (int i = 0; i < 15; i++) {
-            System.out.println(i);
+            System.out.printf("%b: %d\n", plaaaaaaaay, i);
+            plaaaaaaaay = !plaaaaaaaay;
         }
 
-        try {
-            System.out.println("uhmm");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //makeCallSite(Entry.class, "anotherMethod", "()V"/*, MethodType.methodType(void.class)*/).dynamicInvoker().invoke();
     }
+
+    /*private static void anotherMethod() {
+        System.out.println("yellow");
+    }
+
+    private static MutableCallSite makeCallSite(final Class<?> target, final String name, final String desc) throws NoSuchMethodException, IllegalAccessException {
+        final MethodHandles.Lookup lookup = MethodHandles.lookup();
+        final MethodHandle handle = lookup.findStatic(target, name, MethodType.fromMethodDescriptorString(desc, target.getClassLoader()));
+        return new MutableCallSite(handle);
+    }*/
 }

@@ -41,6 +41,16 @@ public class ClassWrapper {
         return null;
     }
 
+    public MethodNode getStaticClassInit() {
+        for (final Object methodObj : node.methods) {
+            final MethodNode methodNode = (MethodNode)methodObj;
+            if (methodNode.name.equals("<clinit>"))
+                return methodNode;
+        }
+
+        return null;
+    }
+
     public CopyOnWriteArrayList<MethodNode> getTransformableMethods() {
         final CopyOnWriteArrayList<MethodNode> methods = new CopyOnWriteArrayList<>();
         for (final Object methodObj : node.methods) {

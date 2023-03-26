@@ -13,12 +13,12 @@ import org.objectweb.asm.tree.*;
 import java.util.Arrays;
 
 @TransformerInfo(
-        name = "number-xor",
+        name = "number-obfuscation",
         category = Category.DATA,
         stability = Stability.STABLE,
         ordinal = Ordinal.HIGH
 )
-public class NumberXor extends Transformer {
+public class NumberObfuscation extends Transformer {
     /**
      * Adds additional number shifting on top of xor
      */
