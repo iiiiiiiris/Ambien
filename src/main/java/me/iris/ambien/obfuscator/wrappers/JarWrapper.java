@@ -38,6 +38,9 @@ public class JarWrapper {
     }
 
     public JarWrapper from(final File file) throws IOException {
+        if (!file.exists())
+            throw new RuntimeException("Input jar file doesn't exist.");
+
         // Convert file to jar file
         final JarFile jarFile = new JarFile(file);
         Ambien.LOGGER.info("Loading jar: " + jarFile.getName());

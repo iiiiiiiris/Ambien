@@ -31,6 +31,10 @@ public class ClassWrapper {
         return (node.access & Opcodes.ACC_INTERFACE) == Opcodes.ACC_INTERFACE;
     }
 
+    public boolean isEnum() {
+        return (node.access & Opcodes.ACC_ENUM) == Opcodes.ACC_ENUM;
+    }
+
     public MethodNode getClassInit() {
         for (final Object methodObj : node.methods) {
             final MethodNode methodNode = (MethodNode)methodObj;
