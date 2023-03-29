@@ -3,6 +3,7 @@ package me.iris.ambien.obfuscator.entry;
 import com.beust.jcommander.JCommander;
 import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.settings.Settings;
+import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.utilities.StringUtil;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 
@@ -37,6 +38,25 @@ public class Entrypoint {
         try {
             // Initialize managers
             Ambien.get.init(ambienArgs.noVersionCheck);
+
+            // Get transformer info
+            if (ambienArgs.about != null) {
+                // Get the transformer
+                final Transformer transformer = Ambien.get.transformerManager.getTransformer(ambienArgs.about);
+
+                // Make sure it exists
+                if (transformer == null) {
+                    Ambien.LOGGER.info("No transformer found with the name \"{}\"", ambienArgs.about);
+                    return;
+                }
+
+                // Print info about the transformer
+                Ambien.LOGGER.info("Info for transformer \"{}\"", transformer.getName());
+                Ambien.LOGGER.info("Category: {}", transformer.getCategory().toString());
+                Ambien.LOGGER.info("Stability: {}", transformer.getStability().toString());
+                Ambien.LOGGER.info("Description: {}", transformer.getDescription());
+                return;
+            }
 
             // Create settings file if one wasn't provided or load provided settings from arg
             if (ambienArgs.createConfig) {

@@ -17,7 +17,8 @@ import java.util.Collections;
         name = "shuffle",
         category = Category.DATA,
         stability = Stability.STABLE,
-        ordinal = Ordinal.LOW
+        ordinal = Ordinal.LOW,
+        description = "Shuffles fields & methods."
 )
 public class Shuffle extends Transformer {
     @Override

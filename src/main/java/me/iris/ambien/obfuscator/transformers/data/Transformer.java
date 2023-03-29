@@ -1,5 +1,6 @@
 package me.iris.ambien.obfuscator.transformers.data;
 
+import lombok.Getter;
 import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.settings.data.implementations.ListSetting;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
@@ -16,11 +17,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class Transformer implements Opcodes {
+    @Getter
     private final String name = getClass().getAnnotation(TransformerInfo.class).name();
-
+    @Getter
     private final Category category = getClass().getAnnotation(TransformerInfo.class).category();
+    @Getter
     private final Stability stability = getClass().getAnnotation(TransformerInfo.class).stability();
+    @Getter
     private final Ordinal ordinal = getClass().getAnnotation(TransformerInfo.class).ordinal();
+    @Getter
+    private final String description = getClass().getAnnotation(TransformerInfo.class).description();
 
     private final boolean enabledByDefault = getClass().getAnnotation(TransformerInfo.class).enabledByDefault();
     public final BooleanSetting enabled = new BooleanSetting("enabled", enabledByDefault);
@@ -64,18 +70,6 @@ public abstract class Transformer implements Opcodes {
         // reverse list so the setting from this class are first
         Collections.reverse(settings);
         return settings;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Stability getStability() {
-        return stability;
-    }
-
-    public Ordinal getOrdinal() {
-        return ordinal;
     }
 
     public boolean isEnabled() {

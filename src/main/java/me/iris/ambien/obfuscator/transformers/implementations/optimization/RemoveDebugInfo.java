@@ -13,7 +13,8 @@ import org.objectweb.asm.tree.ClassNode;
 @TransformerInfo(
         name = "remove-debug-info",
         category = Category.OPTIMIZATION,
-        stability = Stability.STABLE
+        stability = Stability.STABLE,
+        description = "Removes information from classes related to debugging."
 )
 public class RemoveDebugInfo extends Transformer {
     @Override

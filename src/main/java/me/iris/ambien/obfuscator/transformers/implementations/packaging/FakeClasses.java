@@ -17,7 +17,8 @@ import org.objectweb.asm.tree.ClassNode;
 @TransformerInfo(
         name = "fake-classes",
         category = Category.PACKAGING,
-        stability = Stability.STABLE
+        stability = Stability.STABLE,
+        description = "Adds classes that aren't used"
 )
 public class FakeClasses extends Transformer {
     public final NumberSetting<Integer> classes = new NumberSetting<>("classes", 50);

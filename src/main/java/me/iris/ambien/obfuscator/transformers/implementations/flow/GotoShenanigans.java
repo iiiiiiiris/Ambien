@@ -21,7 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = "goto-shenanigans",
         category = Category.CONTROL_FLOW,
         stability = Stability.STABLE,
-        ordinal = Ordinal.HIGH
+        ordinal = Ordinal.HIGH,
+        description = "Adds junk jumps/code around real jump instructions."
 )
 public class GotoShenanigans extends Transformer {
     public final BooleanSetting aggressive = new BooleanSetting("aggressive", false);
@@ -110,6 +111,8 @@ public class GotoShenanigans extends Transformer {
 
                             methodNode.instructions.insertBefore(insn, list);
                         });
+
+                // TODO: Replace other jump instructions
             });
         });
     }

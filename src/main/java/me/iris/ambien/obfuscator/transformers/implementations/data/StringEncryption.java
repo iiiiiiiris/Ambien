@@ -24,7 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         name = "string-encryption",
         category = Category.DATA,
         stability = Stability.STABLE,
-        ordinal = Ordinal.HIGH
+        ordinal = Ordinal.HIGH,
+        description = "Encrypts string using xor & random keys."
 )
 public class StringEncryption extends Transformer {
     // TODO: Randomize descriptor argument order & add decoy args

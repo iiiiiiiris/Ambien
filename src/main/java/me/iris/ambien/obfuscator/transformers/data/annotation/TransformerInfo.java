@@ -17,6 +17,7 @@ public @interface TransformerInfo {
     Category category();
     Stability stability();
     Ordinal ordinal() default Ordinal.STANDARD;
+    String description() default "No description provided.";
 
     boolean enabledByDefault() default false;
 }

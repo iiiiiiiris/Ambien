@@ -15,7 +15,8 @@ import org.objectweb.asm.tree.*;
 @TransformerInfo(
         name = "fake-jumps",
         category = Category.CONTROL_FLOW,
-        stability = Stability.STABLE
+        stability = Stability.STABLE,
+        description = "Adds useless method & jumps to it at the start of methods."
 )
 public class FakeJumps extends Transformer {
     @Override
@@ -59,7 +60,7 @@ public class FakeJumps extends Transformer {
         // Make instruction list to invoke the function
         final InsnList visitInsnList = new InsnList();
         visitInsnList.add(new MethodInsnNode(INVOKESTATIC, wrapper.getNode().name, randMethodName, "()I", false));
-        visitInsnList.add(new VarInsnNode(ISTORE, 1));
+        visitInsnList.add(new VarInsnNode(ISTORE, node.maxLocals + 1));
         node.instructions.insertBefore(node.instructions.getFirst(), visitInsnList);
     }
 }

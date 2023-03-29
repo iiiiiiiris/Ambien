@@ -14,7 +14,8 @@ import java.util.Arrays;
 @TransformerInfo(
         name = "remove-bloat-instructions",
         category = Category.OPTIMIZATION,
-        stability = Stability.STABLE
+        stability = Stability.STABLE,
+        description = "Removes instructions that don't do anything"
 )
 public class RemoveBloatInstructions extends Transformer {
     @Override

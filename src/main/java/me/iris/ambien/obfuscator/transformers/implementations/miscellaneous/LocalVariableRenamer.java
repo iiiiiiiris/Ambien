@@ -17,7 +17,8 @@ import org.objectweb.asm.tree.LocalVariableNode;
         name = "local-variable-renamer",
         category = Category.MISCELLANEOUS,
         stability = Stability.STABLE,
-        ordinal = Ordinal.LOW
+        ordinal = Ordinal.LOW,
+        description = "Renames local variables in methods to random characters"
 )
 public class LocalVariableRenamer extends Transformer {
     @Override

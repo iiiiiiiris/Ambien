@@ -9,7 +9,8 @@ import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 @TransformerInfo(
         name = "aggressive-compression",
         category = Category.PACKAGING,
-        stability = Stability.STABLE
+        stability = Stability.STABLE,
+        description = "Exports the jar using aggressive compression"
 )
 public class AggressiveCompression extends Transformer {
     @Override

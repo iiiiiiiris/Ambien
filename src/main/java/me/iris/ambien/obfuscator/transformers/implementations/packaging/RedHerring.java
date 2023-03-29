@@ -24,7 +24,8 @@ import java.util.jar.JarOutputStream;
 @TransformerInfo(
         name = "red-herring",
         category = Category.PACKAGING,
-        stability = Stability.STABLE
+        stability = Stability.STABLE,
+        description = "Adds a fake jar before the real jar"
 )
 public class RedHerring extends Transformer {
     /**

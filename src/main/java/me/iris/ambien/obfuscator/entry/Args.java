@@ -11,6 +11,13 @@ public class Args {
     public boolean help;
 
     @Parameter(
+            names = {"-about", "--about-transformer", "-info", "--transformer-info"},
+            description = "Gets the information about a specified transformer.",
+            arity = 1
+    )
+    public String about;
+
+    @Parameter(
             names = {"--create-config"},
             description = "Creates a new config"
     )

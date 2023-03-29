@@ -20,7 +20,8 @@ import java.util.Iterator;
         name = "useless-instructions",
         category = Category.CONTROL_FLOW,
         stability = Stability.STABLE,
-        ordinal = Ordinal.LOW
+        ordinal = Ordinal.LOW,
+        description = "Adds NOP instructions to methods."
 )
 public class UselessInstructions extends Transformer {
     /**

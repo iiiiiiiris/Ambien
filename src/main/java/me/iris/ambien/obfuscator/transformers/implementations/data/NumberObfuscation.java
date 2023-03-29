@@ -16,7 +16,8 @@ import java.util.Arrays;
         name = "number-obfuscation",
         category = Category.DATA,
         stability = Stability.STABLE,
-        ordinal = Ordinal.HIGH
+        ordinal = Ordinal.HIGH,
+        description = "Replaces numbers with random math operations to get the original value."
 )
 public class NumberObfuscation extends Transformer {
     /**
@@ -31,7 +32,7 @@ public class NumberObfuscation extends Transformer {
                 // ignore empty methods
                 if (methodNode.instructions == null || methodNode.instructions.size() == 0) return;
 
-                // TODO: Implement this for longs
+                // TODO: Implement this for longs, floats, doubles + recode this :)
                 Arrays.stream(methodNode.instructions.toArray())
                         .filter(insn -> insn.getOpcode() == BIPUSH)
                         .map(insn -> (IntInsnNode)insn)

@@ -12,7 +12,8 @@ import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 @TransformerInfo(
         name = "folder-classes",
         category = Category.PACKAGING,
-        stability = Stability.STABLE
+        stability = Stability.STABLE,
+        description = "Appends a forward slash to the name of all class files within the jar. This will cause some decompilers to ignore the class, thinking it's a directory."
 )
 public class FolderClasses extends Transformer {
     @Override

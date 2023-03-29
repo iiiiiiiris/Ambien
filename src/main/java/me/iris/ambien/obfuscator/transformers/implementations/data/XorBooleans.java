@@ -17,7 +17,8 @@ import java.util.List;
         name = "xor-booleans",
         category = Category.DATA,
         stability = Stability.STABLE,
-        ordinal = Ordinal.LOW
+        ordinal = Ordinal.LOW,
+        description = "Adds xor instruction to generic true/false to all local booleans."
 )
 public class XorBooleans extends Transformer {
     @Override

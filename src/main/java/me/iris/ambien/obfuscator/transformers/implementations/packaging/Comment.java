@@ -13,7 +13,8 @@ import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 @TransformerInfo(
         name = "comment",
         category = Category.PACKAGING,
-        stability = Stability.STABLE
+        stability = Stability.STABLE,
+        description = "ZIP File comment"
 )
 public class Comment extends Transformer {
     public static final StringSetting commentText = new StringSetting("comment-text", "Obfuscated by Ambien");
