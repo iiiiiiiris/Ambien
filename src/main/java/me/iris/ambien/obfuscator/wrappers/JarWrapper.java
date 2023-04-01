@@ -78,6 +78,10 @@ public class JarWrapper {
     }
 
     public JarWrapper importLibrary(final String path) throws IOException {
+        final File file = new File(path);
+        if (!file.exists())
+            throw new RuntimeException(String.format("Library jar \"%s\" file doesn't exist.", path));
+
         // Convert file to jar file
         final JarFile jarFile = new JarFile(path);
         Ambien.LOGGER.info("Loading library: " + jarFile.getName());

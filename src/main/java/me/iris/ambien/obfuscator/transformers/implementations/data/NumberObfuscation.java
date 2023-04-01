@@ -21,7 +21,8 @@ import java.util.Arrays;
 )
 public class NumberObfuscation extends Transformer {
     /**
-     * Adds additional number shifting on top of xor
+     * Adds additional math operations on top of generic xoring
+     * Probably shouldn't use this is a server or game/mod if you care about performance
      */
     public final BooleanSetting aggressive = new BooleanSetting("aggressive", false);
 
@@ -32,87 +33,73 @@ public class NumberObfuscation extends Transformer {
                 // ignore empty methods
                 if (methodNode.instructions == null || methodNode.instructions.size() == 0) return;
 
-                // TODO: Implement this for longs, floats, doubles + recode this :)
                 Arrays.stream(methodNode.instructions.toArray())
-                        .filter(insn -> insn.getOpcode() == BIPUSH)
-                        .map(insn -> (IntInsnNode)insn)
+                        .filter(insn -> insn.getOpcode() == BIPUSH || insn.getOpcode() == SIPUSH || insn.getOpcode() == LDC)
                         .forEach(insn -> {
-                            // Int instruction node
-
-                            // TODO: check if the operand is a min/max value
-
-                            // List for instructions
                             final InsnList list = new InsnList();
 
-                            // Xor keys
-                            final int xor = MathUtil.randomInt(1, Short.MAX_VALUE),
-                                    xor2 = MathUtil.randomInt(1, Short.MAX_VALUE);
+                            // Obfuscate number
+                            if (insn.getOpcode() == LDC)
+                                list.add(obfuscateLDC((LdcInsnNode)insn));
+                            else
+                                list.add(obfuscatePUSH(insn.getOpcode(), ((IntInsnNode)insn).operand));
 
-                            // Apply xor to operand
-                            final int xorVal = insn.operand ^ xor;
-                            final int xorVal2 = xorVal ^ xor2;
-
-                            if (aggressive.isEnabled()) {
-                                //int xorIdx = methodNode.maxLocals + 1;
-                                final boolean randSwitch = MathUtil.RANDOM.nextBoolean();
-
-                                // credits itzsomebody for ixor & ior shit
-
-                                // Xor first value & scrap it
-                                list.add(new IntInsnNode(BIPUSH, xor2));
-                                list.add(new IntInsnNode(BIPUSH, xorVal2));
-                                list.add(new InsnNode(IXOR));
-                                list.add(new InsnNode(POP));
-
-                                // push xor2 & xorval2 to the stack
-                                list.add(new IntInsnNode(BIPUSH, xor2));
-                                list.add(new IntInsnNode(BIPUSH, xorVal2));
-
-                                // complicated IOR
-                                list.add(new InsnNode(ICONST_M1));
-                                list.add(new InsnNode(IXOR));
-                                list.add(new InsnNode(IAND));
-                                list.add(new IntInsnNode(BIPUSH, xorVal2));
-                                list.add(new InsnNode(IADD));
-
-                                // push xor2 & xorval2 to the stack
-                                list.add(new IntInsnNode(BIPUSH, xor2));
-                                list.add(new IntInsnNode(BIPUSH, xorVal2));
-
-                                // finish xor
-                                list.add(new InsnNode(IAND));
-                                list.add(new InsnNode(ISUB));
-
-                                // xor xor'd xor2 w/ xor1 (wtf)
-                                list.add(new IntInsnNode(BIPUSH, xor));
-                                list.add(new InsnNode(IXOR));
-
-                                // negate value twice
-                                if (randSwitch)
-                                    list.add(new InsnNode(INEG));
-
-                                list.add(new InsnNode(ICONST_M1));
-                                list.add(new InsnNode(IXOR));
-                                list.add(new InsnNode(ICONST_1));
-                                list.add(new InsnNode(IADD));
-
-                                if (!randSwitch)
-                                    list.add(new InsnNode(INEG));
-                            } else {
-                                // Xor the value twice
-                                list.add(new IntInsnNode(BIPUSH, xor2));
-                                list.add(new IntInsnNode(BIPUSH, xorVal2));
-                                list.add(new InsnNode(IXOR));
-
-                                list.add(new IntInsnNode(BIPUSH, xor));
-                                list.add(new InsnNode(IXOR));
+                            // Replace instructions
+                            if (list.size() > 0) {
+                                methodNode.instructions.insertBefore(insn, list);
+                                methodNode.instructions.remove(insn);
                             }
-
-                            // Replace current val w/ obfuscated val instructions
-                            methodNode.instructions.insertBefore(insn, list);
-                            methodNode.instructions.remove(insn);
-                });
+                        });
             });
         });
+    }
+
+    private InsnList obfuscateLDC(final LdcInsnNode node) {
+        final InsnList list = new InsnList();
+        // TODO
+        return list;
+    }
+
+    private InsnList obfuscatePUSH(final int pushOpcode, final int operand) {
+        final InsnList list = new InsnList();
+
+        if (aggressive.isEnabled()) {
+            // get or keys
+            final int[] orKeys = MathUtil.getTwoRandomInts(1, Short.MAX_VALUE);
+            final int orKey = orKeys[0] | orKeys[1];
+
+            // get xor key
+            final int xorKey = MathUtil.randomInt(1, Short.MAX_VALUE);
+
+            // perform operations on original value
+            final int val = operand ^ (xorKey | orKey);
+
+            // perform or operation on or keys
+            list.add(new IntInsnNode(pushOpcode, orKeys[0]));
+            list.add(new IntInsnNode(pushOpcode, orKeys[1]));
+            list.add(new InsnNode(IOR));
+
+            // perform or operation on xor key
+            list.add(new IntInsnNode(pushOpcode, xorKey));
+            list.add(new InsnNode(IOR));
+
+            // perform xor operation on value
+            list.add(new IntInsnNode(pushOpcode, val));
+            list.add(new InsnNode(IXOR));
+        } else {
+            // perform basic xor operation
+            final int key = MathUtil.randomInt(1, Short.MAX_VALUE);
+            final int xorVal = operand ^ key;
+
+            list.add(new IntInsnNode(pushOpcode, key)); // push key to stack
+            list.add(new IntInsnNode(pushOpcode, xorVal)); // push xor'd value to stack
+            list.add(new InsnNode(IXOR)); // perform xor operation
+
+            // negate the value twice
+            for (int i = 0; i < 2; i++)
+                list.add(new InsnNode(INEG));
+        }
+
+        return list;
     }
 }

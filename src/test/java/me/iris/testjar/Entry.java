@@ -4,6 +4,7 @@ public class Entry {
     public static boolean uhhhh = true;
 
     public static void main(String[] args) throws Throwable {
+        AnotherClass.yellow();
         boolean plaaaaaaaay = false;
         for (int i = 0; i < 15; i++) {
             System.out.printf("%b: %d\n", plaaaaaaaay, i);

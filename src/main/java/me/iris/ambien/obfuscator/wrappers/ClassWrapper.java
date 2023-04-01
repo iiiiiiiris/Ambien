@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.wrappers;
 
 import lombok.Getter;
 import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.builders.ClassBuilder;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
@@ -84,8 +85,18 @@ public class ClassWrapper {
     }
 
     public byte[] toByteArray() {
-        final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        node.accept(writer);
-        return writer.toByteArray();
+        try {
+            // Attempt to get bytes of class using COMPUTE_FRAMES
+            final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            node.accept(writer);
+            return writer.toByteArray();
+        } catch (TypeNotPresentException e) {
+            Ambien.LOGGER.warn("Attempting to write class \"{}\" using COMPUTE_MAXS, some errors may appear during runtime.", name);
+
+            // Attempt to get bytes of class using COMPUTE_MAXS
+            final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            node.accept(writer);
+            return writer.toByteArray();
+        }
     }
 }

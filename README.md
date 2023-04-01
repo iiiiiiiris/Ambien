@@ -10,7 +10,9 @@
 | Crashers                | ✅ |
 | Miscellaneous ZIP stuff | ✅ |
 | GUI                     | 🚫 |
+
 ###### As of 1.3.0-beta release
+
 ###### Unimplemented features will be added at some point
 
 # Usage
@@ -20,6 +22,8 @@ Run the jar using the `--create-config` argument to create a base config
 
 Then run the Ambien jar using the `-config` argument (including the path to your config)
 
+###### Note: Ambien should not be used with other obfuscators.
+
 ###### To see all the arguments Ambien offers, you can use the '-help' argument
 
 
@@ -27,19 +31,18 @@ Then run the Ambien jar using the `-config` argument (including the path to your
 
 # Example obfuscation
 
-Example obfuscation of Ambien v1.3.0
+Example obfuscation of Ambien v1.4.0
 
 ## Original
 
 ``` java
     public static void main(String[] args) {
-        final int someVar = 78;
-        System.out.println(someVar);
+        AnotherClass.yellow();
+        boolean plaaaaaaaay = false;
 
-        System.out.println("Yellow");
-
-        for (int i = 0; i < 15; i++) {
-            System.out.println(i);
+        for (int i = 0; i < 15; ++i) {
+            System.out.printf("%b: %d\n", plaaaaaaaay, i);
+            plaaaaaaaay = !plaaaaaaaay;
         }
     }
 ```
@@ -50,30 +53,42 @@ Full test jar source code can be found [here](./src/test/java/me/iris/testjar)
 ## Obfuscated
 
 ```java
-    public static void main(String[] JTRM8tK85WLaQKce2BhjxOian8oF4nUIaYHdYdVVaBKsJ) {
-        int var10000 = -67 ^ 94;
-        int DAJCpTp5SkwmMUnzcp7ML2EBR1KJqL08ZBbp = ~(-((-67 & ~94) + 94 - (-67 & 94) ^ -83)) + 1;
-        int var10001 = -58 ^ 5;
-        System.out.println(~(-((-58 & ~5) + 5 - (-58 & 5) ^ -115)) + 1);
-        byte[] var4 = new byte[]{107, 43, 112, 52, 56, 43, 112, 52, 47, 43, 112, 52, 47, 43, 112, 52, 50, 43, 112, 52, 75, 43, 112, 52};
-        System.out.println(ONLxZK6w5auwOq2E5M8BYv6tvvfI4RGEWEkYNd4v(new String(A9WMJkzuXNvyaJqOloqmHA23wDwWgYf2wba24r24aGzFIbN4(var4)), 4WroerTItw1TdLAaZyEQi2weKq, 3518));
-        int a0UUHPNFAWmwc27ys5ST1bJZrHm9zzlH7sKf7t6Alczoo90 = 0;
- 
-        while(true) {
-            var10001 = 76 ^ -6;
-            if (a0UUHPNFAWmwc27ys5ST1bJZrHm9zzlH7sKf7t6Alczoo90 >= ~(-((76 & ~-6) + -6 - (76 & -6) ^ -71)) + 1) {
-                return;
+public static void main(String[] args) throws Throwable {
+    AnotherClass.yellow();
+    boolean plaaaaaaaay = false ^ true;
+    int i = 0;
+
+    while(i < ((16 | -108 | 0) ^ -101)) {
+        byte[] var4 = new byte[]{73, 121, 76, 53, 109, 50, 76, 53, 110, 121, 76, 53, 105, 121, 76, 53, 52, 121, 76, 53, 103, 50, 76, 53, 110, 121, 76, 53};
+        System.out.printf(A07cQLY3IyaJGAbxxl5(new String(486kCqNqdnWHTRGJKW21xyGHn05SSE8b5CoJlJHw6Y9hUzd3YCj7qmPGN(var4)), QuVrzlq11JpJxR8B1R7CTzqo6w, 13120), plaaaaaaaay, i);
+        boolean var10003;
+        if (!plaaaaaaaay) {
+            var10003 = true;
+            if (((31 | -116 | -22) ^ -37) != ((48 | 50 | -128) ^ 55)) {
             }
- 
-            System.out.println(a0UUHPNFAWmwc27ys5ST1bJZrHm9zzlH7sKf7t6Alczoo90);
-            ++a0UUHPNFAWmwc27ys5ST1bJZrHm9zzlH7sKf7t6Alczoo90;
+    
+            boolean var6 = false;
+            if (var6) {
+            }
+        } else {
+            var10003 = false;
+        }
+
+        plaaaaaaaay = var10003;
+        ++i;
+        if (((-22 | 34 | -124) ^ -124) != ((48 | -2 | 123) ^ -40)) {
+        }
+
+        boolean var5 = false;
+        if (var5) {
         }
     }
+}
 ```
 
-Full class decompilation can be seen [here](https://vip.ci/?947fc08f7460787b#EShMNTBW1CXanQopLTqXSFavASZDyE4dkn5KdnfPPoam)
+Full class decompilation can be seen [here](https://vip.ci/?98c97d3404ec4125#2keA7i4uBXCjVtoQGFP66Vbh2fJXiWMyWc9ZFKevkHRJ)
 
-Transformer settings can be seen [here](https://vip.ci/?ffe80453b066b624#7Ap2R4ijWKupHNiNHqAhScaRSt11Zx5xKsPHWeEGXCwM)
+Transformer settings can be seen [here](https://vip.ci/?8cc3559a08c792dc#Bru8XXGN3JUZutY75wVCLdnf6ySjGgYRiEFSSEuS4xhp)
 
 ## Crasher
 
