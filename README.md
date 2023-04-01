@@ -4,8 +4,8 @@
 |   Feature   | Implemented |
 | ----------- | ----------- |
 | String encryption       | ✅ |
-| Number obfuscation      | partial |
-| Flow obfuscation        | partial |
+| Number obfuscation      | ✅ |
+| Flow obfuscation        | ✅ |
 | Invoke dynamics         | 🚫 |
 | Crashers                | ✅ |
 | Miscellaneous ZIP stuff | ✅ |
