@@ -1,5 +1,7 @@
 package me.iris.ambien.obfuscator.transformers.implementations.data;
 
+import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.asm.SizeEvaluator;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
@@ -7,6 +9,7 @@ import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
+import me.iris.ambien.obfuscator.wrappers.MethodWrapper;
 import org.objectweb.asm.tree.*;
 
 import java.util.ArrayList;
@@ -24,11 +27,11 @@ public class XorBooleans extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
-            classWrapper.getTransformableMethods().forEach(methodNode -> {
+            classWrapper.getMethods().stream().filter(MethodWrapper::hasLocalVariables).forEach(methodWrapper -> {
                 final List<Integer> booleanIndexes = new ArrayList<>();
 
                 // Get the index of all booleans in method
-                methodNode.localVariables.forEach(localVarNode -> {
+                methodWrapper.getNode().localVariables.forEach(localVarNode -> {
                     if (localVarNode.desc == null) return;
 
                     if (localVarNode.desc.equals("Z"))
@@ -36,7 +39,7 @@ public class XorBooleans extends Transformer {
                 });
 
                 // Obfuscate setting a boolean to true/false explicitly
-                Arrays.stream(methodNode.instructions.toArray())
+                methodWrapper.getInstructions()
                         .filter(insn ->
                                 insn instanceof VarInsnNode &&
                                         (insn.getPrevious().getOpcode() == ICONST_0 || insn.getPrevious().getOpcode() == ICONST_1) &&
@@ -66,8 +69,12 @@ public class XorBooleans extends Transformer {
                             }
 
                             // replace default value
-                            methodNode.instructions.insertBefore(insn, xorInsns);
-                            methodNode.instructions.remove(prevInsn);
+                            if (SizeEvaluator.willOverflow(methodWrapper, xorInsns))
+                                Ambien.LOGGER.error("Can't xor boolean without method overflowing. Class: {} | Method: {}", classWrapper.getName(), methodWrapper.getNode().name);
+                            else {
+                                methodWrapper.getNode().instructions.insertBefore(insn, xorInsns);
+                                methodWrapper.getNode().instructions.remove(prevInsn);
+                            }
                         });
             });
         });

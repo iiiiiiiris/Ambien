@@ -21,11 +21,11 @@ public class LineNumberRandomizer extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
-            classWrapper.getTransformableMethods().forEach(methodNode -> {
-                Arrays.stream(methodNode.instructions.toArray()).
-                        filter(insn -> insn instanceof LineNumberNode).
-                        map(insn -> (LineNumberNode)insn).
-                        forEach(lineNode -> lineNode.line = MathUtil.randomInt());
+            classWrapper.getMethods().forEach(methodWrapper -> {
+                methodWrapper.getInstructions()
+                        .filter(insn -> insn instanceof LineNumberNode)
+                        .map(insn -> (LineNumberNode)insn)
+                        .forEach(lineNode -> lineNode.line = MathUtil.randomInt());
             });
         });
     }

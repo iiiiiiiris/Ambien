@@ -1,5 +1,7 @@
 package me.iris.ambien.obfuscator.transformers.implementations.data;
 
+import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.asm.SizeEvaluator;
 import me.iris.ambien.obfuscator.builders.FieldBuilder;
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
 import me.iris.ambien.obfuscator.transformers.data.Category;
@@ -11,6 +13,7 @@ import me.iris.ambien.obfuscator.utilities.MathUtil;
 import me.iris.ambien.obfuscator.utilities.StringUtil;
 import me.iris.ambien.obfuscator.wrappers.ClassWrapper;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
+import me.iris.ambien.obfuscator.wrappers.MethodWrapper;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.*;
 
@@ -40,9 +43,9 @@ public class StringEncryption extends Transformer {
 
             // Check if the class has a method w/ string we can encrypt
             final AtomicBoolean hasStrings = new AtomicBoolean(false);
-            classWrapper.getTransformableMethods().forEach(methodNode -> {
+            classWrapper.getMethods().forEach(methodWrapper -> {
                 // check if
-                for (AbstractInsnNode insn : methodNode.instructions) {
+                for (AbstractInsnNode insn : methodWrapper.getInstructionsList()) {
                     if (insn.getOpcode() != LDC || !(insn instanceof LdcInsnNode)) continue;
                     if (!(((LdcInsnNode)insn).cst instanceof String)) continue;
                     hasStrings.set(true);
@@ -62,19 +65,17 @@ public class StringEncryption extends Transformer {
             classWrapper.addMethod(arrReversenode);
 
             // Encrypt strings
-            classWrapper.getTransformableMethods().forEach(methodNode -> {
-                // ignore empty methods
-                if (methodNode.instructions == null || methodNode.instructions.size() == 0) return;
-
+            classWrapper.getMethods().stream().filter(MethodWrapper::hasInstructions).forEach(methodWrapper -> {
                 // counter for adding locals
-                final AtomicInteger localCounter = new AtomicInteger(methodNode.maxLocals);
+                final AtomicInteger localCounter = new AtomicInteger(methodWrapper.getNode().maxLocals);
 
-                Arrays.stream(methodNode.instructions.toArray())
+                methodWrapper.getInstructions()
                         .filter(insn -> insn.getOpcode() == LDC && insn instanceof LdcInsnNode)
                         .map(insn -> (LdcInsnNode)insn)
                         .forEach(ldc -> {
                             // check if the ldc is a string
                             if (!(ldc.cst instanceof String)) return;
+                            final String origString = (String)ldc.cst;
 
                             // Generate encryption keys
                             final int[] keys = MathUtil.getTwoRandomInts(1, Short.MAX_VALUE);
@@ -87,8 +88,12 @@ public class StringEncryption extends Transformer {
                             final InsnList list = new InsnList();
                             list.add(buildDecryptionRoutine(classWrapper, arrReversenode, decryptorNode, encryptedLDC, keys[0], keys[1], localCounter));
 
-                            methodNode.instructions.insertBefore(ldc, list);
-                            methodNode.instructions.remove(ldc);
+                            // Replace LDC w/ decryption routine
+                            if (SizeEvaluator.willOverflow(methodWrapper, list)) {
+                                Ambien.LOGGER.error("Can't add string decryption without method overflowing. Class: {} | Method: {}", classWrapper.getName(), methodWrapper.getNode().name);
+                                ldc.cst = origString;
+                            } else
+                                methodWrapper.replaceInstruction(ldc, list);
                         });
             });
         });

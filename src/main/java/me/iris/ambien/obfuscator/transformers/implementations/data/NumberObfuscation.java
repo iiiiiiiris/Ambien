@@ -1,5 +1,7 @@
 package me.iris.ambien.obfuscator.transformers.implementations.data;
 
+import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.asm.SizeEvaluator;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
@@ -8,6 +10,7 @@ import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
+import me.iris.ambien.obfuscator.wrappers.MethodWrapper;
 import org.objectweb.asm.tree.*;
 
 import java.util.Arrays;
@@ -29,11 +32,10 @@ public class NumberObfuscation extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
-            classWrapper.getTransformableMethods().forEach(methodNode -> {
-                // ignore empty methods
-                if (methodNode.instructions == null || methodNode.instructions.size() == 0) return;
-
-                Arrays.stream(methodNode.instructions.toArray())
+            classWrapper.getMethods().stream()
+                    .filter(MethodWrapper::hasInstructions)
+                    .forEach(methodWrapper -> {
+                        methodWrapper.getInstructions()
                         .filter(insn -> insn.getOpcode() == BIPUSH || insn.getOpcode() == SIPUSH || insn.getOpcode() == LDC)
                         .forEach(insn -> {
                             final InsnList list = new InsnList();
@@ -46,8 +48,10 @@ public class NumberObfuscation extends Transformer {
 
                             // Replace instructions
                             if (list.size() > 0) {
-                                methodNode.instructions.insertBefore(insn, list);
-                                methodNode.instructions.remove(insn);
+                                if (SizeEvaluator.willOverflow(methodWrapper, list))
+                                    Ambien.LOGGER.error("Can't obfuscate number without method overflowing. Class: {} | Method: {}", classWrapper.getName(), methodWrapper.getNode().name);
+                                else
+                                    methodWrapper.replaceInstruction(insn, list);
                             }
                         });
             });

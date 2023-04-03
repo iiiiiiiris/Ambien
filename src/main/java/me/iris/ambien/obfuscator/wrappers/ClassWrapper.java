@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.wrappers;
 
 import lombok.Getter;
 import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.asm.CompetentClassWriter;
 import me.iris.ambien.obfuscator.builders.ClassBuilder;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -9,6 +10,9 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @SuppressWarnings("CastCanBeRemovedNarrowingVariableType")
@@ -20,12 +24,21 @@ public class ClassWrapper {
     private final ClassNode node;
 
     @Getter
+    private final List<MethodWrapper> methods;
+
+    @Getter
     private final boolean isLibraryClass;
 
     public ClassWrapper(String name, ClassNode node, boolean isLibraryClass) {
         this.name = name;
         this.node = node;
+        this.methods = new ArrayList<>();
         this.isLibraryClass = isLibraryClass;
+
+        // Import methods from class
+        Arrays.stream(node.methods.toArray())
+                .map(methodObj -> (MethodNode)methodObj)
+                .forEach(methodNode -> methods.add(new MethodWrapper(methodNode)));
     }
 
     public boolean isInterface() {
@@ -34,37 +47,6 @@ public class ClassWrapper {
 
     public boolean isEnum() {
         return (node.access & Opcodes.ACC_ENUM) == Opcodes.ACC_ENUM;
-    }
-
-    public MethodNode getClassInit() {
-        for (final Object methodObj : node.methods) {
-            final MethodNode methodNode = (MethodNode)methodObj;
-            if (methodNode.name.equals("<init>"))
-                return methodNode;
-        }
-
-        return null;
-    }
-
-    public MethodNode getStaticClassInit() {
-        for (final Object methodObj : node.methods) {
-            final MethodNode methodNode = (MethodNode)methodObj;
-            if (methodNode.name.equals("<clinit>"))
-                return methodNode;
-        }
-
-        return null;
-    }
-
-    public CopyOnWriteArrayList<MethodNode> getTransformableMethods() {
-        final CopyOnWriteArrayList<MethodNode> methods = new CopyOnWriteArrayList<>();
-        for (final Object methodObj : node.methods) {
-            final MethodNode methodNode = (MethodNode)methodObj;
-            if (!Ambien.get.excludedClasses.contains(methodNode.name))
-                methods.add(methodNode);
-        }
-
-        return methods;
     }
 
     public CopyOnWriteArrayList<FieldNode> getFields() {
@@ -82,19 +64,22 @@ public class ClassWrapper {
 
     public void addMethod(final MethodNode methodNode) {
         node.methods.add(methodNode);
+        methods.add(new MethodWrapper(methodNode));
     }
 
     public byte[] toByteArray() {
+        Ambien.LOGGER.debug("Converting class to bytes: {}", name);
+
         try {
             // Attempt to get bytes of class using COMPUTE_FRAMES
-            final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            final CompetentClassWriter writer = new CompetentClassWriter(ClassWriter.COMPUTE_FRAMES);
             node.accept(writer);
             return writer.toByteArray();
-        } catch (TypeNotPresentException e) {
+        } catch (TypeNotPresentException | ArrayIndexOutOfBoundsException e) {
             Ambien.LOGGER.warn("Attempting to write class \"{}\" using COMPUTE_MAXS, some errors may appear during runtime.", name);
 
             // Attempt to get bytes of class using COMPUTE_MAXS
-            final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            final CompetentClassWriter writer = new CompetentClassWriter(ClassWriter.COMPUTE_MAXS);
             node.accept(writer);
             return writer.toByteArray();
         }

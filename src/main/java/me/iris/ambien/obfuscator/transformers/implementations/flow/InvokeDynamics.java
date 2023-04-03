@@ -35,8 +35,8 @@ public class InvokeDynamics extends Transformer {
             final MethodNode callSite = buildCallSite();
             final Handle handle = new Handle(H_INVOKESTATIC, classWrapper.getNode().name, callSite.name, callSite.desc, false);
 
-            classWrapper.getTransformableMethods().forEach(methodNode -> {
-                Arrays.stream(methodNode.instructions.toArray())
+            classWrapper.getMethods().forEach(methodWrapper -> {
+                methodWrapper.getInstructions()
                         .filter(insn -> insn.getOpcode() == INVOKESTATIC)
                         .map(insn -> (MethodInsnNode)insn)
                         .forEach(insn -> {

@@ -1,5 +1,7 @@
 package me.iris.ambien.obfuscator.transformers.implementations.flow;
 
+import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.asm.SizeEvaluator;
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
@@ -9,6 +11,7 @@ import me.iris.ambien.obfuscator.utilities.MathUtil;
 import me.iris.ambien.obfuscator.utilities.StringUtil;
 import me.iris.ambien.obfuscator.wrappers.ClassWrapper;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
+import me.iris.ambien.obfuscator.wrappers.MethodWrapper;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.*;
 
@@ -21,23 +24,16 @@ import org.objectweb.asm.tree.*;
 public class FakeJumps extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
-        getClasses(wrapper).forEach(classWrapper -> {
-            classWrapper.getTransformableMethods().forEach(methodNode -> {
-                injectFakeVarJump(classWrapper, methodNode);
-            });
-        });
+        getClasses(wrapper).stream()
+                .filter(classWrapper -> !classWrapper.isEnum() && !classWrapper.isInterface())
+                .forEach(classWrapper ->
+                classWrapper.getMethods().stream()
+                        .filter(methodWrapper -> methodWrapper.hasInstructions() && !methodWrapper.isInitializer())
+                        .forEach(methodWrapper ->
+                        injectFakeVarJump(classWrapper, methodWrapper)));
     }
 
-    private void injectFakeVarJump(final ClassWrapper wrapper, final MethodNode node) {
-        // Make sure the class isn't an interface
-        if (wrapper.isInterface()) return;
-
-        // Make sure the method has instructions already in it
-        if (node.instructions == null || node.instructions.size() == 0) return;
-
-        // Check if it's the class constructor
-        if (node.name.equals("<init>")) return;
-
+    private void injectFakeVarJump(final ClassWrapper wrapper, final MethodWrapper methodWrapper) {
         // Build method that returns a random int
         final String randMethodName = StringUtil.randomString(20);
         final MethodBuilder randMethodBuilder = new MethodBuilder().setName(randMethodName).setAccess(ACC_PUBLIC | ACC_STATIC).setDesc("()I").setSignature(null);
@@ -60,7 +56,12 @@ public class FakeJumps extends Transformer {
         // Make instruction list to invoke the function
         final InsnList visitInsnList = new InsnList();
         visitInsnList.add(new MethodInsnNode(INVOKESTATIC, wrapper.getNode().name, randMethodName, "()I", false));
-        visitInsnList.add(new VarInsnNode(ISTORE, node.maxLocals + 1));
-        node.instructions.insertBefore(node.instructions.getFirst(), visitInsnList);
+        visitInsnList.add(new VarInsnNode(ISTORE, methodWrapper.getNode().maxLocals + 1));
+
+        // Add fake jump
+        if (SizeEvaluator.willOverflow(methodWrapper, visitInsnList))
+            Ambien.LOGGER.error("Can't xor boolean without method overflowing. Class: {} | Method: {}", wrapper.getName(), methodWrapper.getNode().name);
+        else
+            methodWrapper.getNode().instructions.insertBefore(methodWrapper.getInstructionsList().getFirst(), visitInsnList);
     }
 }

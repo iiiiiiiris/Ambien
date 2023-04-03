@@ -1,6 +1,7 @@
 package me.iris.ambien.obfuscator.transformers.implementations.flow;
 
 import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.asm.SizeEvaluator;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.settings.data.implementations.NumberSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
@@ -9,6 +10,7 @@ import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
+import me.iris.ambien.obfuscator.wrappers.MethodWrapper;
 import org.objectweb.asm.tree.*;
 
 import java.util.Iterator;
@@ -25,10 +27,6 @@ import java.util.Iterator;
 )
 public class UselessInstructions extends Transformer {
     /**
-     * Adds NOP instructions
-     */
-    public final BooleanSetting nopInsns = new BooleanSetting("nop-instructions", true);
-    /**
      * Interval NOP instructions will be placed ~ every x instructions will be NOP(s)
      */
     public final NumberSetting<Integer> nopInsnInterval = new NumberSetting<>("nop-instruction-interval", 5);
@@ -39,18 +37,14 @@ public class UselessInstructions extends Transformer {
 
     @Override
     public void transform(JarWrapper wrapper) {
-        getClasses(wrapper).forEach(classWrapper -> {
-            classWrapper.getTransformableMethods().forEach(methodNode -> {
-                // Inject NOP instructions
-                if (nopInsns.isEnabled())
-                    injectNOPInsn(methodNode, classWrapper.getName());
-            });
-        });
+        getClasses(wrapper).forEach(classWrapper ->
+                classWrapper.getMethods().forEach(methodWrapper ->
+                        injectNOPInsn(methodWrapper, classWrapper.getName())));
     }
 
-    private void injectNOPInsn(final MethodNode node, final String className) {
+    private void injectNOPInsn(final MethodWrapper methodWrapper, final String className) {
         // Get instruction iterator
-        final Iterator<?> iterator = node.instructions.iterator();
+        final Iterator<?> iterator = methodWrapper.getInstructions().iterator();
 
         // integer for iterator index
         int i = 0;
@@ -62,8 +56,13 @@ public class UselessInstructions extends Transformer {
             if (i % nopInsnInterval.getValue() == 0) {
                 // Add x amount of NOP instructions
                 for (int c = 0; c < nopInsnCount.getValue(); c++) {
-                    node.instructions.insert(instruction, new InsnNode(NOP));
-                    Ambien.LOGGER.debug("inserted nop instructions @ {} within method {} within class {}", i, node.name, className);
+                    if (methodWrapper.getSize() + 1 >= SizeEvaluator.MAX_SIZE) {
+                        Ambien.LOGGER.error("Can't add NOP instruction without method overflowing. Class: {} | Method: {}", className, methodWrapper.getNode().name);
+                        break;
+                    }
+
+                    methodWrapper.getInstructionsList().insert(instruction, new InsnNode(NOP));
+                    //Ambien.LOGGER.debug("inserted nop instructions @ {} within method {} within class {}", i, methodWrapper.getNode().name, className);
                 }
             }
 
