@@ -15,6 +15,11 @@ import me.iris.ambien.obfuscator.wrappers.MethodWrapper;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.*;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 @TransformerInfo(
         name = "fake-jumps",
         category = Category.CONTROL_FLOW,
@@ -22,16 +27,23 @@ import org.objectweb.asm.tree.*;
         description = "Adds useless method & jumps to it at the start of methods."
 )
 public class FakeJumps extends Transformer {
+    private final Map<ClassWrapper, List<MethodWrapper>> classMethodsMap = new ConcurrentHashMap<>();
+
     @Override
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).stream()
                 .filter(classWrapper -> !classWrapper.isEnum() && !classWrapper.isInterface())
-                .forEach(classWrapper ->
-                classWrapper.getMethods().stream()
-                        .filter(methodWrapper -> methodWrapper.hasInstructions() && !methodWrapper.isInitializer())
-                        .forEach(methodWrapper ->
-                        injectFakeVarJump(classWrapper, methodWrapper)));
+                .forEach(classWrapper -> {
+                    List<MethodWrapper> methods = classWrapper.getMethods().stream()
+                            .filter(methodWrapper -> methodWrapper.hasInstructions() && !methodWrapper.isInitializer())
+                            .collect(Collectors.toList());
+                    classMethodsMap.put(classWrapper, methods);
+                });
+
+        classMethodsMap.forEach((classWrapper, methods) ->
+                methods.forEach(methodWrapper -> injectFakeVarJump(classWrapper, methodWrapper)));
     }
+
 
     private void injectFakeVarJump(final ClassWrapper wrapper, final MethodWrapper methodWrapper) {
         // Build method that returns a random int

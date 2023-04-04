@@ -25,6 +25,9 @@ public class LocalVariableRenamer extends Transformer {
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
             classWrapper.getMethods().forEach(methodWrapper -> {
+                if (!methodWrapper.hasLocalVariables()){
+                    return;
+                }
                 for (Object localVarObj : methodWrapper.getNode().localVariables) {
                     //noinspection CastCanBeRemovedNarrowingVariableType
                     final LocalVariableNode localVarNode = (LocalVariableNode)localVarObj;
