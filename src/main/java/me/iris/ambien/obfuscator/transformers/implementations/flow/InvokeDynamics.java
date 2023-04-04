@@ -10,8 +10,9 @@ import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.StringUtil;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 import org.objectweb.asm.Handle;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.util.Arrays;
 
@@ -35,18 +36,16 @@ public class InvokeDynamics extends Transformer {
             final Handle handle = new Handle(H_INVOKESTATIC, classWrapper.getNode().name, callSite.name, callSite.desc, false);
 
             classWrapper.getMethods().forEach(methodWrapper -> {
-                final InsnList instructions = methodWrapper.getInstructionsList();
-                for (int i = 0; i < instructions.size(); i++) {
-                    final AbstractInsnNode insn = instructions.get(i);
-                    if (insn.getOpcode() != INVOKESTATIC) continue;
-
-                    final MethodInsnNode methodInsnNode = (MethodInsnNode) insn;
-                    final String desc = Type.getMethodDescriptor(Type.getReturnType(methodInsnNode.desc), Arrays.stream(methodInsnNode.desc.split(";")).map(Type::getType).toArray(Type[]::new));
-
-                    final InvokeDynamicInsnNode dynamicInsn = new InvokeDynamicInsnNode(StringUtil.randomString(15), desc, handle);
-                    instructions.insertBefore(insn, dynamicInsn);
-                    instructions.remove(insn);
-                }
+                methodWrapper.getInstructions()
+                        .filter(insn -> insn.getOpcode() == INVOKESTATIC)
+                        .map(insn -> (MethodInsnNode)insn)
+                        .forEach(insn -> {
+                            // TODO
+                            /*methodNode.instructions.insertBefore(insn, new MethodInsnNode(INVOKESTATIC,
+                                    classWrapper.getNode().name, callSite.name, callSite.desc));*/
+                            //methodNode.instructions.insertBefore(insn, new InvokeDynamicInsnNode(StringUtil.randomString(15), insn.desc, handle));
+                            //methodNode.instructions.remove(insn);
+                        });
             });
         });
     }
@@ -56,7 +55,7 @@ public class InvokeDynamics extends Transformer {
         final MethodNode node = builder.buildNode();
 
         node.visitCode(); {
-            node.visitInsn(RETURN);
+
         } node.visitEnd();
 
         return node;

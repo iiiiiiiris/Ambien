@@ -13,11 +13,9 @@ public class StringUtil {
         final Random random = new Random(System.currentTimeMillis());
 
         final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < len; i++) {
             builder.append(CHARS[random.nextInt(CHARS.length)]);
         }
-
-        builder.append(System.currentTimeMillis());
 
         return builder.toString();
     }
