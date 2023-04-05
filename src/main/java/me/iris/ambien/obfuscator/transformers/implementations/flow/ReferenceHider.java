@@ -45,7 +45,6 @@ public class ReferenceHider extends Transformer {
                         final String ownerDesc = insn.owner.replaceAll("/", ".");
                         final String targetMethod = insn.name;
 
-                        // TODO: encrypt these strings
                         final InsnList invokeDynamicList = new InsnList();
                         invokeDynamicList.add(new LdcInsnNode(ownerDesc));
                         invokeDynamicList.add(new LdcInsnNode(targetMethod));
