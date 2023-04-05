@@ -21,6 +21,9 @@ public class Entrypoint {
         System.out.println(" #+#     #+# #+#       #+# #+#    #+#    #+#     #+#        #+#   #+#+#      ");
         System.out.println("###     ### ###       ### ######### ########### ########## ###    ####       ");
 
+        // Get current time
+        final long startingTime = System.currentTimeMillis();
+
         // Parse arguments
         final Args ambienArgs = new Args();
         final JCommander commander = JCommander.newBuilder().addObject(ambienArgs).build();
@@ -81,8 +84,11 @@ public class Entrypoint {
             // Export specified jar
             transformedWrapper.to();
 
+            // Get current time
+            final long endTime = System.currentTimeMillis();
+
             // Debugging
-            Ambien.LOGGER.debug("finished obfuscation");
+            Ambien.LOGGER.debug("finished obfuscation in {}ms", (endTime - startingTime));
         } catch (Exception e) {
             final String javaVersion = System.getProperty("java.version");
             final String javaVendor = System.getProperty("java.vendor");

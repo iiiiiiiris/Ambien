@@ -4,6 +4,7 @@ import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.asm.SizeEvaluator;
 import me.iris.ambien.obfuscator.builders.FieldBuilder;
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
+import me.iris.ambien.obfuscator.settings.data.implementations.ListSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
@@ -17,7 +18,7 @@ import me.iris.ambien.obfuscator.wrappers.MethodWrapper;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.*;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,6 +34,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class StringEncryption extends Transformer {
     // TODO: Randomize descriptor argument order & add decoy args
     private static final String DECRYPTOR_DESCRIPTOR = "(Ljava/lang/String;II)Ljava/lang/String;";
+
+    /**
+     * List of string that won't be encrypted
+     */
+    public final ListSetting stringBlacklist = new ListSetting("string-blacklist", new ArrayList<>());
 
     @Override
     public void transform(JarWrapper wrapper) {
@@ -76,6 +82,9 @@ public class StringEncryption extends Transformer {
                             // check if the ldc is a string
                             if (!(ldc.cst instanceof String)) return;
                             final String origString = (String)ldc.cst;
+
+                            // Check if the string is blacklisted
+                            if (stringBlacklist.getOptions().contains(origString)) return;
 
                             // Generate encryption keys
                             final int[] keys = MathUtil.getTwoRandomInts(1, Short.MAX_VALUE);

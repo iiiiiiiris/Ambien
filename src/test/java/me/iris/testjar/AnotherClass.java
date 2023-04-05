@@ -1,6 +1,8 @@
 package me.iris.testjar;
 
 public class AnotherClass {
+    private final int unusedField = 45;
+
     public static void yellow() {
         final short s = 12356;
         final int i = 23542362;
@@ -12,5 +14,9 @@ public class AnotherClass {
         System.out.println(l);
         System.out.println(f);
         System.out.println(d);
+    }
+
+    private void neverUsed() {
+        System.out.println("wow");
     }
 }

@@ -9,21 +9,29 @@ public class Entry {
     public static boolean uhhhh = true;
 
     public static void main(String[] args) throws Throwable {
-        AnotherClass.yellow();
-        boolean plaaaaaaaay = false;
+        //AnotherClass.yellow();
+        //test();
+
+        boolean plaaaaaaaay = !uhhhh;
         for (int i = 0; i < 15; i++) {
             System.out.printf("%b: %d\n", plaaaaaaaay, i);
             plaaaaaaaay = !plaaaaaaaay;
         }
 
-        makeCallSite(Entry.class, "anotherMethod", "(Ljava/lang/String;)V"/*, MethodType.methodType(void.class)*/).dynamicInvoker().invoke("hahaha");
+        makeCallSite("me.iris.testjar.Entry", "test", "(Ljava/lang/String;)V"/*, MethodType.methodType(void.class)*/).dynamicInvoker().invoke();
+        //makeCallSite(/*Entry.class*/"me.iris.testjar.Entry", "anotherMethod", "(Ljava/lang/String;)V"/*, MethodType.methodType(void.class)*/).dynamicInvoker().invoke("hahaha");
     }
 
-    private static void anotherMethod(String erm) {
+    private static void test() {
+        System.out.println("test!");
+    }
+
+    /*private static void anotherMethod(String erm) {
         System.out.println(erm);
-    }
+    }*/
 
-    private static MutableCallSite makeCallSite(final Class<?> target, final String name, final String desc) throws NoSuchMethodException, IllegalAccessException {
+    private static MutableCallSite makeCallSite(final String owner, final String name, final String desc) throws NoSuchMethodException, IllegalAccessException, ClassNotFoundException {
+        final Class<?> target = Class.forName(owner);
         final MethodHandles.Lookup lookup = MethodHandles.lookup();
         final MethodHandle handle = lookup.findStatic(target, name, MethodType.fromMethodDescriptorString(desc, target.getClassLoader()));
         return new MutableCallSite(handle);

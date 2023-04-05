@@ -21,7 +21,7 @@ public class TransformerManager {
                 new UselessInstructions(),
                 new FakeJumps(),
                 new GotoShenanigans(),
-                new InvokeDynamics(),
+                new ReferenceHider(),
 
                 // Data
                 new NumberObfuscation(),
@@ -43,6 +43,7 @@ public class TransformerManager {
                 // Optimization
                 new RemoveBloatInstructions(),
                 new RemoveDebugInfo(),
+                new RemoveUnused(),
 
                 // Miscellaneous
                 new LocalVariableRenamer(),

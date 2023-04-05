@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.optimization;
 
 import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.exceptions.SettingConflictException;
+import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
@@ -10,6 +11,8 @@ import me.iris.ambien.obfuscator.transformers.implementations.exploits.Crasher;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 import org.objectweb.asm.tree.ClassNode;
 
+import java.util.ArrayList;
+
 @TransformerInfo(
         name = "remove-debug-info",
         category = Category.OPTIMIZATION,
@@ -17,6 +20,8 @@ import org.objectweb.asm.tree.ClassNode;
         description = "Removes information from classes related to debugging."
 )
 public class RemoveDebugInfo extends Transformer {
+    public final BooleanSetting removeInnerClasses = new BooleanSetting("remove-inner-classes", false);
+
     @Override
     public void transform(JarWrapper wrapper) {
         // Check for settings conflicts
@@ -29,6 +34,9 @@ public class RemoveDebugInfo extends Transformer {
             classNode.sourceDebug = "";
             classNode.sourceFile = "";
             classNode.signature = "";
+
+            if (removeInnerClasses.isEnabled())
+                classNode.innerClasses = new ArrayList<>();
         });
     }
 }
