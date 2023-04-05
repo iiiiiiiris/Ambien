@@ -1,7 +1,9 @@
 package me.iris.ambien.obfuscator.transformers.implementations.flow;
 
 import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.asm.SizeEvaluator;
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
+import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
@@ -9,7 +11,9 @@ import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
 import me.iris.ambien.obfuscator.utilities.StringUtil;
+import me.iris.ambien.obfuscator.wrappers.ClassWrapper;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
+import me.iris.ambien.obfuscator.wrappers.MethodWrapper;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.*;
 
@@ -20,47 +24,104 @@ import org.objectweb.asm.tree.*;
         ordinal = Ordinal.HIGH
 )
 public class ReferenceHider extends Transformer {
+    /**
+     * Will only hide references to methods that don't have any arguments
+     */
+    public final BooleanSetting onlyNoArgs = new BooleanSetting("only-no-args", true);
+
     @Override
     public void transform(JarWrapper wrapper) {
-        // TODO: Check for classes that have methods that have references to hide
+        getClasses(wrapper).stream()
+                .filter(classWrapper -> !classWrapper.isEnum() && !classWrapper.isInterface())
+                .forEach(classWrapper -> {
+                    if (classWrapper.getNode().version < V1_8) {
+                        Ambien.LOGGER.info("[invoke dynamics] Ignoring class {} (class is too old)", classWrapper.getName());
+                        return;
+                    }
 
-        getClasses(wrapper).forEach(classWrapper -> {
-            if (classWrapper.isInterface()) return;
-            if (classWrapper.getNode().version < V1_8) {
-                Ambien.LOGGER.info("[invoke dynamics] Ignoring class {} (class is too old)", classWrapper.getName());
-                return;
-            }
+                    // Make sure the class has a method that calls another method
+                    boolean hasMethodCalls = false;
+                    for (MethodWrapper methodWrapper : classWrapper.getMethods()) {
+                        if (hasMethodCalls) break;
+                        for (AbstractInsnNode insn : methodWrapper.getInstructionsList()) {
+                            if (insn instanceof MethodInsnNode && insn.getOpcode() == INVOKESTATIC) {
+                                hasMethodCalls = true;
+                                break;
+                            }
+                        }
+                    }
 
-            // Build & add call site
-            final MethodNode callSite = buildCallSite();
-            classWrapper.getNode().methods.add(callSite);
+                    if (!hasMethodCalls) return;
 
-            classWrapper.getMethods().forEach(methodWrapper ->
-                    methodWrapper.getInstructions()
-                    .filter(insn -> insn.getOpcode() == INVOKESTATIC)
-                    .map(insn -> (MethodInsnNode)insn)
-                    .forEach(insn -> {
-                        if (!insn.desc.equals("()V")) return;
+                    // Build & add call site
+                    final MethodNode callSite = buildCallSite();
+                    classWrapper.getNode().methods.add(callSite);
 
-                        final String ownerDesc = insn.owner.replaceAll("/", ".");
-                        final String targetMethod = insn.name;
+                    classWrapper.getMethods().forEach(methodWrapper ->
+                            methodWrapper.getInstructions()
+                            .filter(insn -> insn.getOpcode() == INVOKESTATIC)
+                            .map(insn -> (MethodInsnNode)insn)
+                            .forEach(insn -> {
+                                // Make sure the owner is loaded
+                                boolean isOwnerLoaded = false;
+                                for (ClassWrapper classWrapper1 : wrapper.getClasses()) {
+                                    if (classWrapper1.getNode().name.equals(insn.owner))
+                                        isOwnerLoaded = true;
+                                }
+                                if (!isOwnerLoaded) {
+                                    Ambien.LOGGER.debug("owner not loaded: " + insn.owner);
+                                    return;
+                                }
 
-                        final InsnList invokeDynamicList = new InsnList();
-                        invokeDynamicList.add(new LdcInsnNode(ownerDesc));
-                        invokeDynamicList.add(new LdcInsnNode(targetMethod));
-                        invokeDynamicList.add(new LdcInsnNode("()V"));
-                        invokeDynamicList.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name, callSite.name, callSite.desc, false));
-                        invokeDynamicList.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/invoke/MutableCallSite", "dynamicInvoker", "()Ljava/lang/invoke/MethodHandle;", false));
+                                // get target info
+                                final String desc = insn.desc;
+                                final String owner = insn.owner.replaceAll("/", ".");
+                                final String targetMethod = insn.name;
 
-                        // TODO: add support for methods w/ arguments
-                        // arguments for the method should go here (need to implement this :)
-                        // don't forget to update descriptor in the invoke method :)
+                                final InsnList dynamicInvokerList = new InsnList();
+                                dynamicInvokerList.add(new LdcInsnNode(owner));
+                                dynamicInvokerList.add(new LdcInsnNode(targetMethod));
+                                dynamicInvokerList.add(new LdcInsnNode(desc));
+                                dynamicInvokerList.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name, callSite.name, callSite.desc, false));
+                                dynamicInvokerList.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/invoke/MutableCallSite", "dynamicInvoker", "()Ljava/lang/invoke/MethodHandle;", false));
 
-                        invokeDynamicList.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/invoke/MethodHandle", "invoke", "()V", false));
+                                // Instruction for invoking the call site
+                                final MethodInsnNode invokeCallSite = new MethodInsnNode(INVOKEVIRTUAL,
+                                        "java/lang/invoke/MethodHandle", "invoke", desc, false);
 
-                        // replace instructions
-                        methodWrapper.replaceInstruction(insn, invokeDynamicList);
-                    }));
+                                if (desc.equals("()V")) {
+                                    final InsnList copy = new InsnList();
+                                    copy.add(dynamicInvokerList);
+                                    copy.add(invokeCallSite);
+
+                                    if (!SizeEvaluator.willOverflow(methodWrapper, copy)) {
+                                        methodWrapper.getInstructionsList().insertBefore(insn, dynamicInvokerList);
+                                        methodWrapper.replaceInstruction(insn, invokeCallSite);
+                                    } else
+                                        Ambien.LOGGER.error("Can't hide method reference without overflowing. Owner: {} | Method: {} | Target method: {}", owner, methodWrapper.getNode().name, targetMethod);
+                                } else if (!onlyNoArgs.isEnabled()) {
+                                    final int argCount = desc.substring(desc.indexOf('('), desc.indexOf(')')).split(";").length;
+                                    System.out.println(argCount);
+
+                                    AbstractInsnNode firstArgInsn = null;
+                                    for (int i = 0; i < argCount + 1; i++) {
+                                        if (i == 0) firstArgInsn = insn;
+                                        firstArgInsn = firstArgInsn.getPrevious();
+                                    }
+
+                                    if (firstArgInsn != null) {
+                                        final InsnList copy = new InsnList();
+                                        copy.add(dynamicInvokerList);
+                                        copy.add(invokeCallSite);
+
+                                        if (!SizeEvaluator.willOverflow(methodWrapper, copy)) {
+                                            methodWrapper.getInstructionsList().insertBefore(firstArgInsn, dynamicInvokerList);
+                                            methodWrapper.replaceInstruction(insn, invokeCallSite);
+                                        } else
+                                            Ambien.LOGGER.error("Can't hide method reference without overflowing. Owner: {} | Method: {} | Target method: {}", owner, methodWrapper.getNode().name, targetMethod);
+                                    }
+                                }
+                            }));
         });
     }
 
@@ -113,9 +174,34 @@ public class ReferenceHider extends Transformer {
             node.visitMethodInsn(INVOKESPECIAL, "java/lang/invoke/MutableCallSite", "<init>", "(Ljava/lang/invoke/MethodHandle;)V", false);
             node.visitInsn(ARETURN);
 
-            // TODO: obfuscate variable names
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+                    "Ljava/lang/String;", null, labelA, labelA, 0);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+                    "Ljava/lang/String;", null, labelC, labelC, 1);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+                    "Ljava/lang/String;", null, labelC, labelC, 2);
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+                    "Ljava/lang/Class;", null, labelA, labelC, 3);
+
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+                    "Ljava/lang/invoke/MethodHandles$Lookup;", null, labelB, labelC, 4);
+
+            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+                    "Ljava/lang/invoke/MethodHandle;", null, labelC, labelD, 5);
         } node.visitEnd();
 
         return node;
     }
+
+    /*private void addCallSiteJumpInsns(final MethodWrapper wrapper, final InsnList dynamicInvokerList, final MethodInsnNode invokeCallSite, final String ownerName) {
+        final InsnList copy = new InsnList();
+        copy.add(dynamicInvokerList);
+        copy.add(invokeCallSite);
+
+        if (!SizeEvaluator.willOverflow(wrapper, copy)) {
+
+        } else {
+            Ambien.LOGGER.error("Can't hide method reference without overflowing. Owner: {} | Method: {}", ownerName, wrapper.getNode().name);
+        }
+    }*/
 }

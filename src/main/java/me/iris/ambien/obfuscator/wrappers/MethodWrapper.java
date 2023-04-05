@@ -44,6 +44,11 @@ public class MethodWrapper {
         node.instructions.remove(insn);
     }
 
+    public void replaceInstruction(final AbstractInsnNode insn, final AbstractInsnNode replacementInsn) {
+        node.instructions.insertBefore(insn, replacementInsn);
+        node.instructions.remove(insn);
+    }
+
     public boolean hasLocalVariables() {
         return node.localVariables != null && !node.localVariables.isEmpty();
     }
