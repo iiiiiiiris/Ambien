@@ -10,7 +10,8 @@ public class StringUtil {
 
     public String randomString(final int len) {
         // Use current time in milliseconds as the seed to not repeat
-        final Random random = new Random(System.currentTimeMillis());
+        final Random insurace = new Random(System.nanoTime());
+        final Random random = new Random(System.currentTimeMillis() + insurace.nextInt());
 
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < len; i++) {
