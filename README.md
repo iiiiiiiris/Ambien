@@ -11,7 +11,7 @@
 | Miscellaneous ZIP stuff | ✅ |
 | GUI                     | 🚫 |
 
-###### As of 1.3.0-beta release
+###### As of 1.4.0-beta release
 
 ###### Unimplemented features will be added at some point
 
@@ -20,12 +20,13 @@ Download the latest jar [here](https://github.com/iiiiiiiris/Ambien/releases/lat
 
 Run the jar using the `--create-config` argument to create a base config
 
+###### Ambien MUST be ran with Java 8+
+
 Then run the Ambien jar using the `-config` argument (including the path to your config)
 
 ###### Note: Ambien should not be used with other obfuscators.
 
 ###### To see all the arguments Ambien offers, you can use the '-help' argument
-
 
 **Note to developers: to see debug output, add `-Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG` to vm options**
 
@@ -36,15 +37,15 @@ Example obfuscation of Ambien v1.4.0
 ## Original
 
 ``` java
-    public static void main(String[] args) {
-        AnotherClass.yellow();
-        boolean plaaaaaaaay = false;
+public static void main(String[] args) {
+    AnotherClass.yellow();
+    boolean plaaaaaaaay = false;
 
-        for (int i = 0; i < 15; ++i) {
-            System.out.printf("%b: %d\n", plaaaaaaaay, i);
-            plaaaaaaaay = !plaaaaaaaay;
-        }
+    for (int i = 0; i < 15; ++i) {
+        System.out.printf("%b: %d\n", plaaaaaaaay, i);
+        plaaaaaaaay = !plaaaaaaaay;
     }
+}
 ```
 
 

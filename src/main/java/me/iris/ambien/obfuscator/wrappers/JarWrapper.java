@@ -17,6 +17,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.zip.Deflater;
 
+@SuppressWarnings("resource")
 public class JarWrapper {
     @Getter
     private final List<String> directories;
@@ -40,6 +41,9 @@ public class JarWrapper {
     public JarWrapper from(final File file) throws IOException {
         if (!file.exists())
             throw new RuntimeException("Input jar file doesn't exist.");
+
+        if (!file.getName().endsWith(".jar"))
+            throw new RuntimeException("Input jar isn't a jar file.");
 
         // Convert file to jar file
         final JarFile jarFile = new JarFile(file);
@@ -81,6 +85,9 @@ public class JarWrapper {
         final File file = new File(path);
         if (!file.exists())
             throw new RuntimeException(String.format("Library jar \"%s\" file doesn't exist.", path));
+
+        if (!file.getName().endsWith(".jar"))
+            throw new RuntimeException(String.format("Library jar \"%s\" isn't a jar file.", path));
 
         // Convert file to jar file
         final JarFile jarFile = new JarFile(path);
