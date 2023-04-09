@@ -9,7 +9,7 @@ public class Entry {
     public static boolean uhhhh = true;
 
     public static void main(String[] args) throws Throwable {
-        //AnotherClass.yellow();
+        AnotherClass.yellow();
         test("test!");
 
         boolean plaaaaaaaay = !uhhhh;

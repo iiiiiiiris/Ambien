@@ -192,16 +192,4 @@ public class ReferenceHider extends Transformer {
 
         return node;
     }
-
-    /*private void addCallSiteJumpInsns(final MethodWrapper wrapper, final InsnList dynamicInvokerList, final MethodInsnNode invokeCallSite, final String ownerName) {
-        final InsnList copy = new InsnList();
-        copy.add(dynamicInvokerList);
-        copy.add(invokeCallSite);
-
-        if (!SizeEvaluator.willOverflow(wrapper, copy)) {
-
-        } else {
-            Ambien.LOGGER.error("Can't hide method reference without overflowing. Owner: {} | Method: {}", ownerName, wrapper.getNode().name);
-        }
-    }*/
 }

@@ -25,9 +25,19 @@ import java.util.Arrays;
 public class NumberObfuscation extends Transformer {
     /**
      * Adds additional math operations on top of generic xoring
-     * Probably shouldn't use this is a server or game/mod if you care about performance
+     * Probably shouldn't use this if you care about performance
      */
     public final BooleanSetting aggressive = new BooleanSetting("aggressive", false);
+
+    /**
+     * Obfuscates LDC instructions
+     */
+    public final BooleanSetting ldc = new BooleanSetting("obfuscate-ldc", false);
+
+    /**
+     * Calls the .reverse function for the respective integral type
+     */
+    public final BooleanSetting reverseIntegralNumbers = new BooleanSetting("reverse-integral-numbers", false);
 
     @Override
     public void transform(JarWrapper wrapper) {
@@ -40,10 +50,15 @@ public class NumberObfuscation extends Transformer {
                         .forEach(insn -> {
                             final InsnList list = new InsnList();
 
+                            // TODO: Add custom rand next seed for xor keys as an option
+
                             // Obfuscate number
-                            if (insn.getOpcode() == LDC)
-                                list.add(obfuscateLDC((LdcInsnNode)insn));
-                            else
+                            if (insn.getOpcode() == LDC) {
+                                if (!ldc.isEnabled()) return;
+                                final LdcInsnNode ldc = (LdcInsnNode)insn;
+                                if (!(ldc.cst instanceof Number)) return;
+                                list.add(obfuscateLDC(ldc));
+                            } else
                                 list.add(obfuscatePUSH(insn.getOpcode(), ((IntInsnNode)insn).operand));
 
                             // Replace instructions
@@ -60,7 +75,167 @@ public class NumberObfuscation extends Transformer {
 
     private InsnList obfuscateLDC(final LdcInsnNode node) {
         final InsnList list = new InsnList();
-        // TODO
+
+        final Number number = (Number)node.cst;
+        final Class<?> numCls = number.getClass();
+        final int xorKey = MathUtil.randomInt();
+
+        if (numCls == Integer.class) {
+            int val = number.intValue();
+            if (reverseIntegralNumbers.isEnabled())
+                val = Integer.reverse(val);
+
+            if (aggressive.isEnabled()) {
+                final int orKey = MathUtil.randomInt();
+                final int xor = val ^ (xorKey | orKey);
+
+                list.add(new LdcInsnNode(xor));
+                list.add(new LdcInsnNode(xorKey));
+                list.add(new LdcInsnNode(orKey));
+                list.add(new InsnNode(IOR));
+                list.add(new InsnNode(IXOR));
+
+                // negate the value twice
+                for (int i = 0; i < 2; i++)
+                    list.add(new InsnNode(INEG));
+            } else {
+                final int xor = val ^ xorKey;
+                list.add(new LdcInsnNode(xor));
+                list.add(new LdcInsnNode(xorKey));
+                list.add(new InsnNode(IXOR));
+
+                // negate the value twice
+                for (int i = 0; i < 2; i++)
+                    list.add(new InsnNode(INEG));
+            }
+
+            // Add reverse call
+            if (reverseIntegralNumbers.isEnabled())
+                list.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Integer", "reverse", "(I)I", false));
+        } else if (numCls == Long.class) {
+            long val = number.longValue();
+            if (reverseIntegralNumbers.isEnabled())
+                val = Long.reverse(val);
+
+            if (aggressive.isEnabled()) {
+                final int orKey = MathUtil.randomInt();
+
+                final long xor = val ^ (xorKey | orKey);
+
+                list.add(new LdcInsnNode(xor));
+                list.add(new LdcInsnNode(xorKey));
+                list.add(new InsnNode(I2L));
+                list.add(new LdcInsnNode(orKey));
+                list.add(new InsnNode(I2L));
+                list.add(new InsnNode(LOR));
+                list.add(new InsnNode(LXOR));
+            } else {
+                final long xor = val ^ (long)xorKey;
+                list.add(new LdcInsnNode(xor));
+                list.add(new LdcInsnNode(xorKey));
+                list.add(new InsnNode(I2L));
+                list.add(new InsnNode(LXOR));
+
+                // negate the value twice
+                for (int i = 0; i < 2; i++)
+                    list.add(new InsnNode(LNEG));
+            }
+
+            // Add reverse call
+            if (reverseIntegralNumbers.isEnabled())
+                list.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Long", "reverse", "(J)J", false));
+        } else if (numCls == Float.class) {
+            final float origVal = number.floatValue();
+            final float onlyDec = origVal % 1.f;
+
+            int noDec = (int)Float.parseFloat(String.format("%.0f", origVal));
+            if (reverseIntegralNumbers.isEnabled())
+                noDec = Integer.reverse(noDec);
+
+            if (aggressive.isEnabled()) {
+                final int orKey = MathUtil.randomInt();
+                final int xor = noDec ^ (xorKey | orKey);
+
+                list.add(new LdcInsnNode(xor));
+                list.add(new LdcInsnNode(xorKey));
+                list.add(new LdcInsnNode(orKey));
+                list.add(new InsnNode(IOR));
+                list.add(new InsnNode(IXOR));
+
+                // Add reverse call
+                if (reverseIntegralNumbers.isEnabled())
+                    list.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Integer", "reverse", "(I)I", false));
+
+                list.add(new InsnNode(I2F));
+                list.add(new LdcInsnNode(onlyDec));
+                list.add(new InsnNode(FADD));
+            } else {
+                final int xor = noDec ^ xorKey;
+
+                list.add(new LdcInsnNode(xor));
+                list.add(new LdcInsnNode(xorKey));
+                list.add(new InsnNode(IXOR));
+
+                // Add reverse call
+                if (reverseIntegralNumbers.isEnabled())
+                    list.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Integer", "reverse", "(I)I", false));
+
+                list.add(new InsnNode(I2F));
+                list.add(new LdcInsnNode(onlyDec));
+                list.add(new InsnNode(FADD));
+            }
+
+            // negate the value twice
+            for (int i = 0; i < 2; i++)
+                list.add(new InsnNode(FNEG));
+        } else if (numCls == Double.class) {
+            final double origVal = number.doubleValue();
+            final double onlyDec = origVal % 1.d;
+
+            long noDec = (long)Double.parseDouble(String.format("%.0f", origVal));
+            if (reverseIntegralNumbers.isEnabled())
+                noDec = Long.reverse(noDec);
+
+            if (aggressive.isEnabled()) {
+                final int orKey = MathUtil.randomInt();
+                final long xor = noDec ^ (xorKey | orKey);
+
+                list.add(new LdcInsnNode(xor));
+                list.add(new LdcInsnNode(xorKey));
+                list.add(new LdcInsnNode(orKey));
+                list.add(new InsnNode(IOR));
+                list.add(new InsnNode(I2L));
+                list.add(new InsnNode(LXOR));
+
+                // Add reverse call
+                if (reverseIntegralNumbers.isEnabled())
+                    list.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Long", "reverse", "(J)J", false));
+
+                list.add(new InsnNode(L2D));
+                list.add(new LdcInsnNode(onlyDec));
+                list.add(new InsnNode(DADD));
+            } else {
+                final long xor = noDec ^ xorKey;
+
+                list.add(new LdcInsnNode(xor));
+                list.add(new LdcInsnNode(xorKey));
+                list.add(new InsnNode(I2L));
+                list.add(new InsnNode(LXOR));
+
+                // Add reverse call
+                if (reverseIntegralNumbers.isEnabled())
+                    list.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Long", "reverse", "(J)J", false));
+
+                list.add(new InsnNode(L2D));
+                list.add(new LdcInsnNode(onlyDec));
+                list.add(new InsnNode(DADD));
+            }
+
+            // negate the value twice
+            for (int i = 0; i < 2; i++)
+                list.add(new InsnNode(DNEG));
+        }
+
         return list;
     }
 
@@ -98,11 +273,11 @@ public class NumberObfuscation extends Transformer {
             list.add(new IntInsnNode(pushOpcode, key)); // push key to stack
             list.add(new IntInsnNode(pushOpcode, xorVal)); // push xor'd value to stack
             list.add(new InsnNode(IXOR)); // perform xor operation
-
-            // negate the value twice
-            for (int i = 0; i < 2; i++)
-                list.add(new InsnNode(INEG));
         }
+
+        // negate the value twice
+        for (int i = 0; i < 2; i++)
+            list.add(new InsnNode(INEG));
 
         return list;
     }
