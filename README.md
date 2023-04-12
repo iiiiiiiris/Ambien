@@ -6,25 +6,25 @@
 | String encryption       | ✅ |
 | Number obfuscation      | ✅ |
 | Flow obfuscation        | ✅ |
-| Invoke dynamics         | 🚫 |
+| Reference obfuscation   | 🚫 |
 | Crashers                | ✅ |
 | Miscellaneous ZIP stuff | ✅ |
 | GUI                     | 🚫 |
 
-###### As of 1.4.0-beta release
+**As of 1.4.0-beta release**
 
-###### Unimplemented features will be added at some point
+###### *Unimplemented features will be added at some point*
 
 # Usage
-Download the latest jar [here](https://github.com/iiiiiiiris/Ambien/releases/latest)
+Download the latest jar [**here**](https://github.com/iiiiiiiris/Ambien/releases/latest)
+
+**Before using:**
+* Ambien MUST be ran with Java 8+
+* Ambien should not be used alongside or with other obfuscators.
 
 Run the jar using the `--create-config` argument to create a base config
 
-###### Ambien MUST be ran with Java 8+
-
 Then run the Ambien jar using the `-config` argument (including the path to your config)
-
-###### Note: Ambien should not be used with other obfuscators.
 
 ###### To see all the arguments Ambien offers, you can use the '-help' argument
 
@@ -93,28 +93,14 @@ Transformer settings can be seen [here](https://vip.ci/?8cc3559a08c792dc#Bru8XXG
 
 ## Crasher
 
-![cfr](./web/media/crasher-cfr.png)
+<img src="./web/media/crasher-cfr.png" width="400" height="200">
+<img src="./web/media/crasher-fernflower.png" width="400" height="200">
+<img src="./web/media/crasher-procyon.png" width="400" height="200">
 
-![fernflower](./web/media/crasher-fernflower.png)
+**As of 1.2.1-beta release**
 
-![procyon](./web/media/crasher-procyon.png)
+## Dependencies
+[Lombok](https://projectlombok.org/), [ASM](https://asm.ow2.io/), [SLF4J](https://www.slf4j.org/), [GSON](https://github.com/google/gson) & [JCommander](https://github.com/cbeust/jcommander)
 
-###### As of 1.2.1-beta release
-
-# Dependencies
-###### [Lombok](https://projectlombok.org/)
-
-###### [ASM](https://asm.ow2.io/)
-
-###### [SLF4J](https://www.slf4j.org/)
-
-###### [GSON](https://github.com/google/gson)
-
-###### [JCommander](https://github.com/cbeust/jcommander)
-
-# Credits
-###### [Recaf](https://github.com/Col-E/Recaf)
-
-###### [jd-gui](https://github.com/java-decompiler/jd-gui)
-
-###### [whoever wrote this](https://en.wikipedia.org/wiki/List_of_Java_bytecode_instructions)
+## Tools used & information used
+[Recaf](https://github.com/Col-E/Recaf), [jd-gui](https://github.com/java-decompiler/jd-gui) & [wikipedia of instructions](https://en.wikipedia.org/wiki/List_of_Java_bytecode_instructions)
