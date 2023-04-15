@@ -9,6 +9,7 @@ import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.wrappers.ClassWrapper;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AnnotationNode;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -35,24 +36,9 @@ public abstract class Transformer implements Opcodes {
     public abstract void transform(JarWrapper wrapper);
 
     protected List<ClassWrapper> getClasses(JarWrapper wrapper) {
-        final List<String> exclusions = new ArrayList<>();
-        exclusions.addAll(excludedClasses.getOptions());
-        exclusions.addAll(Ambien.get.excludedClasses);
-
-        return wrapper.getClasses().stream().filter(classWrapper -> {
-            if (classWrapper.isLibraryClass())
-                return false;
-
-            if (exclusions.contains(classWrapper.getNode().name))
-                return false;
-
-            for (final String exclusion : exclusions.stream().filter(exclusion -> exclusion.endsWith("/")).collect(Collectors.toList())) {
-                if (classWrapper.getNode().name.startsWith(exclusion))
-                    return false;
-            }
-
-            return true;
-        }).collect(Collectors.toList());
+        return wrapper.getClasses().stream().filter(classWrapper ->
+                !classWrapper.isLibraryClass() && !Ambien.get.exclusionManager.isClassExcluded(name, classWrapper.getName()))
+                .collect(Collectors.toList());
     }
 
     public List<Setting<?>> getSettings() {

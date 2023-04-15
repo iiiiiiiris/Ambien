@@ -41,36 +41,34 @@ public class NumberObfuscation extends Transformer {
 
     @Override
     public void transform(JarWrapper wrapper) {
-        getClasses(wrapper).forEach(classWrapper -> {
-            classWrapper.getMethods().stream()
-                    .filter(MethodWrapper::hasInstructions)
-                    .forEach(methodWrapper -> {
-                        methodWrapper.getInstructions()
-                        .filter(insn -> insn.getOpcode() == BIPUSH || insn.getOpcode() == SIPUSH || insn.getOpcode() == LDC)
-                        .forEach(insn -> {
-                            final InsnList list = new InsnList();
+        getClasses(wrapper).stream()
+                .filter(classWrapper -> !classWrapper.isEnum() && !classWrapper.isInterface())
+                .forEach(classWrapper -> classWrapper.getTransformableMethods().stream()
+                        .filter(MethodWrapper::hasInstructions)
+                        .forEach(methodWrapper -> methodWrapper.getInstructions()
+                                .filter(insn -> insn.getOpcode() == BIPUSH || insn.getOpcode() == SIPUSH || insn.getOpcode() == LDC)
+                                .forEach(insn -> {
+                                    final InsnList list = new InsnList();
 
-                            // TODO: Add custom rand next seed for xor keys as an option
+                                    // TODO: Add custom rand next seed for xor keys as an option
 
-                            // Obfuscate number
-                            if (insn.getOpcode() == LDC) {
-                                if (!ldc.isEnabled()) return;
-                                final LdcInsnNode ldc = (LdcInsnNode)insn;
-                                if (!(ldc.cst instanceof Number)) return;
-                                list.add(obfuscateLDC(ldc));
-                            } else
-                                list.add(obfuscatePUSH(insn.getOpcode(), ((IntInsnNode)insn).operand));
+                                    // Obfuscate number
+                                    if (insn.getOpcode() == LDC) {
+                                        if (!ldc.isEnabled()) return;
+                                        final LdcInsnNode ldc = (LdcInsnNode) insn;
+                                        if (!(ldc.cst instanceof Number)) return;
+                                        list.add(obfuscateLDC(ldc));
+                                    } else
+                                        list.add(obfuscatePUSH(insn.getOpcode(), ((IntInsnNode) insn).operand));
 
-                            // Replace instructions
-                            if (list.size() > 0) {
-                                if (SizeEvaluator.willOverflow(methodWrapper, list))
-                                    Ambien.LOGGER.error("Can't obfuscate number without method overflowing. Class: {} | Method: {}", classWrapper.getName(), methodWrapper.getNode().name);
-                                else
-                                    methodWrapper.replaceInstruction(insn, list);
-                            }
-                        });
-            });
-        });
+                                    // Replace instructions
+                                    if (list.size() > 0) {
+                                        if (SizeEvaluator.willOverflow(methodWrapper, list))
+                                            Ambien.LOGGER.error("Can't obfuscate number without method overflowing. Class: {} | Method: {}", classWrapper.getName(), methodWrapper.getNode().name);
+                                        else
+                                            methodWrapper.replaceInstruction(insn, list);
+                                    }
+                                })));
     }
 
     private InsnList obfuscateLDC(final LdcInsnNode node) {

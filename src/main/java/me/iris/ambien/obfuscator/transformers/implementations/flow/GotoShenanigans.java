@@ -33,7 +33,7 @@ public class GotoShenanigans extends Transformer {
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).stream()
                 .filter(classWrapper -> !classWrapper.isEnum() && !classWrapper.isInterface())
-                .forEach(classWrapper -> classWrapper.getMethods().stream()
+                .forEach(classWrapper -> classWrapper.getTransformableMethods().stream()
                         .filter(methodWrapper -> !methodWrapper.isInitializer())
                         .forEach(methodWrapper -> {
                             final AtomicInteger localCounter = new AtomicInteger(methodWrapper.getNode().maxLocals);

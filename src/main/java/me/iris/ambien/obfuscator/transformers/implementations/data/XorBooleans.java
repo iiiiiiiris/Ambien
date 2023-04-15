@@ -27,7 +27,7 @@ public class XorBooleans extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
-            classWrapper.getMethods().stream().filter(MethodWrapper::hasLocalVariables).forEach(methodWrapper -> {
+            classWrapper.getTransformableMethods().stream().filter(MethodWrapper::hasLocalVariables).forEach(methodWrapper -> {
                 final List<Integer> booleanIndexes = new ArrayList<>();
 
                 // Get the index of all booleans in method

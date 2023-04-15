@@ -41,7 +41,7 @@ public class ReferenceHider extends Transformer {
 
                     // Make sure the class has a method that calls another method
                     boolean hasMethodCalls = false;
-                    for (MethodWrapper methodWrapper : classWrapper.getMethods()) {
+                    for (MethodWrapper methodWrapper : classWrapper.getTransformableMethods()) {
                         if (hasMethodCalls) break;
                         for (AbstractInsnNode insn : methodWrapper.getInstructionsList()) {
                             if (insn instanceof MethodInsnNode && insn.getOpcode() == INVOKESTATIC) {
@@ -57,7 +57,7 @@ public class ReferenceHider extends Transformer {
                     final MethodNode callSite = buildCallSite();
                     classWrapper.getNode().methods.add(callSite);
 
-                    classWrapper.getMethods().forEach(methodWrapper ->
+                    classWrapper.getTransformableMethods().forEach(methodWrapper ->
                             methodWrapper.getInstructions()
                             .filter(insn -> insn.getOpcode() == INVOKESTATIC)
                             .map(insn -> (MethodInsnNode)insn)

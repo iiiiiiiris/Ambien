@@ -3,7 +3,6 @@ package me.iris.ambien.obfuscator.wrappers;
 import lombok.Getter;
 import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.asm.CompetentClassWriter;
-import me.iris.ambien.obfuscator.builders.ClassBuilder;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
@@ -14,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("CastCanBeRemovedNarrowingVariableType")
 public class ClassWrapper {
@@ -39,6 +39,12 @@ public class ClassWrapper {
         Arrays.stream(node.methods.toArray())
                 .map(methodObj -> (MethodNode)methodObj)
                 .forEach(methodNode -> methods.add(new MethodWrapper(methodNode)));
+    }
+
+    public List<MethodWrapper> getTransformableMethods() {
+        return methods.stream()
+                .filter(method -> !Ambien.get.exclusionManager.isMethodExcluded(name, method.getNode().name))
+                .collect(Collectors.toList());
     }
 
     public boolean isInterface() {

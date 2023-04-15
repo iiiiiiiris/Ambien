@@ -53,4 +53,11 @@ tasks.register('buildTestJar', Jar) {
     from sourceSets.test.output
 }
 
+tasks.register('buildLibraryJar', Jar) {
+    from sourceSets.main.output
+    include('me/iris/ambien/library/**')
+
+    archiveClassifier.set('lib')
+}
+
 build.dependsOn(shadowJar)

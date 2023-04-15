@@ -30,6 +30,7 @@ public class Settings {
         obj.addProperty("output", "somejar-obfuscated.jar");
         obj.add("libraries", new JsonArray());
         obj.add("exclusions", new JsonArray());
+        obj.addProperty("remove-exclude-annotations", true);
 
         // Array all transformers will be in
         final JsonArray transformersArr = new JsonArray();
@@ -101,6 +102,9 @@ public class Settings {
             Ambien.get.excludedClasses.add(exclusion);
             Ambien.LOGGER.info("Added to exclusion list: {}", exclusion);
         }
+
+        // Set remove exclude annotations setting
+        Ambien.get.removeExcludeAnnotations = obj.get("remove-exclude-annotations").getAsBoolean();
 
         // Get transformers array
         final JsonArray transformersArr = obj.get("transformers").getAsJsonArray();

@@ -34,7 +34,7 @@ public class FakeJumps extends Transformer {
         getClasses(wrapper).stream()
                 .filter(classWrapper -> !classWrapper.isEnum() && !classWrapper.isInterface())
                 .forEach(classWrapper -> {
-                    List<MethodWrapper> methods = classWrapper.getMethods().stream()
+                    List<MethodWrapper> methods = classWrapper.getTransformableMethods().stream()
                             .filter(methodWrapper -> methodWrapper.hasInstructions() && !methodWrapper.isInitializer())
                             .collect(Collectors.toList());
                     classMethodsMap.put(classWrapper, methods);

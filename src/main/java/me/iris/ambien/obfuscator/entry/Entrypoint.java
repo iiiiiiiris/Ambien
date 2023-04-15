@@ -5,7 +5,6 @@ import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.settings.Settings;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.utilities.StringUtil;
-import me.iris.ambien.obfuscator.wrappers.JarWrapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,8 +38,8 @@ public class Entrypoint {
         Ambien.LOGGER.info("Parsed arguments.");
 
         try {
-            // Initialize managers
-            Ambien.get.init(ambienArgs.noVersionCheck);
+            // Initialize transformers & check version
+            Ambien.get.initializeTransformers(ambienArgs.noVersionCheck);
 
             // Get transformer info
             if (ambienArgs.about != null) {
@@ -68,33 +67,20 @@ public class Entrypoint {
             } else
                 Settings.load(new File(ambienArgs.configLocation));
 
-            // Import specified jar
-            JarWrapper wrapper = new JarWrapper().from(new File(Ambien.get.inputJar));
+            // Gather information about the input jar
+            Ambien.get.preTransform();
 
-            // Import libraries
-            if (!Ambien.get.libraries.isEmpty()) {
-                for (final String lib : Ambien.get.libraries) {
-                    wrapper = wrapper.importLibrary(lib);
-                }
-            }
-
-            // Transform jar
-            final JarWrapper transformedWrapper = Ambien.get.transform(wrapper, ambienArgs.experimentalTransformers);
-
-            // Export specified jar
-            transformedWrapper.to();
-
-            // Get current time
-            final long endTime = System.currentTimeMillis();
+            // Transform & export jar
+            Ambien.get.transformAndExport(ambienArgs.experimentalTransformers);
 
             // Debugging
-            Ambien.LOGGER.debug("finished obfuscation in {}ms", (endTime - startingTime));
-        } catch (Exception e) {
+            Ambien.LOGGER.debug("finished obfuscation in {}ms", (System.currentTimeMillis() - startingTime));
+        } catch (Throwable t) {
             final String javaVersion = System.getProperty("java.version");
             final String javaVendor = System.getProperty("java.vendor");
 
             // print environment info
-            Ambien.LOGGER.error("Exception thrown: {}", e.getMessage());
+            Ambien.LOGGER.error("Exception thrown: {}", t.getMessage());
             Ambien.LOGGER.error("JVM: {}", javaVersion);
             Ambien.LOGGER.error("Vendor: {}", javaVendor);
             Ambien.LOGGER.error("Args: {}", StringUtil.build(args));
@@ -105,7 +91,7 @@ public class Entrypoint {
             if (!javaVersion.startsWith("1.8"))
                 Ambien.LOGGER.info("It is recommended to use Java 8.");
 
-            e.printStackTrace();
+            t.printStackTrace();
         }
     }
 }

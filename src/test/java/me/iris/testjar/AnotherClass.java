@@ -1,5 +1,8 @@
 package me.iris.testjar;
 
+import me.iris.ambien.library.annotations.Exclude;
+
+//@Exclude
 public class AnotherClass {
     private final int unusedField = 45;
 
@@ -16,6 +19,7 @@ public class AnotherClass {
         System.out.println(d);
     }
 
+    @Exclude
     private void neverUsed() {
         System.out.println("wow");
     }

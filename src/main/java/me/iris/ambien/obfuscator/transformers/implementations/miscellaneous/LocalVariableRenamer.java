@@ -24,7 +24,7 @@ public class LocalVariableRenamer extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
-            classWrapper.getMethods().forEach(methodWrapper -> {
+            classWrapper.getTransformableMethods().forEach(methodWrapper -> {
                 if (!methodWrapper.hasLocalVariables()){
                     return;
                 }

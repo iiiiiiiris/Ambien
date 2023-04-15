@@ -14,13 +14,12 @@ import me.iris.ambien.obfuscator.wrappers.JarWrapper;
         name = "comment",
         category = Category.PACKAGING,
         stability = Stability.STABLE,
-        description = "ZIP File comment"
+        description = "ZIP File comment",
+        enabledByDefault = true
 )
 public class Comment extends Transformer {
-    public static final StringSetting commentText = new StringSetting("comment-text", "Obfuscated by Ambien");
+    public static final StringSetting commentText = new StringSetting("comment-text", "Obfuscated by Ambien\nSource code: https://github.com/iiiiiiiris/Ambien");
 
     @Override
-    public void transform(JarWrapper wrapper) {
-        // Transformation takes place when exporting
-    }
+    public void transform(JarWrapper wrapper) { } // Transformation takes place when exporting
 }

@@ -21,7 +21,7 @@ public class LineNumberRandomizer extends Transformer {
     @Override
     public void transform(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
-            classWrapper.getMethods().forEach(methodWrapper -> {
+            classWrapper.getTransformableMethods().forEach(methodWrapper -> {
                 methodWrapper.getInstructions()
                         .filter(insn -> insn instanceof LineNumberNode)
                         .map(insn -> (LineNumberNode)insn)

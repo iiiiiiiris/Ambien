@@ -49,7 +49,7 @@ public class StringEncryption extends Transformer {
 
             // Check if the class has a method w/ string we can encrypt
             final AtomicBoolean hasStrings = new AtomicBoolean(false);
-            classWrapper.getMethods().forEach(methodWrapper -> {
+            classWrapper.getTransformableMethods().forEach(methodWrapper -> {
                 // check if
                 for (AbstractInsnNode insn : methodWrapper.getInstructionsList()) {
                     if (insn.getOpcode() != LDC || !(insn instanceof LdcInsnNode)) continue;
@@ -71,7 +71,7 @@ public class StringEncryption extends Transformer {
             classWrapper.addMethod(arrReversenode);
 
             // Encrypt strings
-            classWrapper.getMethods().stream().filter(MethodWrapper::hasInstructions).forEach(methodWrapper -> {
+            classWrapper.getTransformableMethods().stream().filter(MethodWrapper::hasInstructions).forEach(methodWrapper -> {
                 // counter for adding locals
                 final AtomicInteger localCounter = new AtomicInteger(methodWrapper.getNode().maxLocals);
 
