@@ -113,7 +113,7 @@ public class RemoveUnused extends Transformer {
                                 .filter(insn -> insn instanceof FieldInsnNode)
                                 .map(insn -> (FieldInsnNode)insn)
                                 .forEach(insn -> {
-                                    System.out.println(insn.owner + "/" + insn.name);
+                                    //System.out.println(insn.owner + "/" + insn.name);
                                     referencedFields.add(insn.owner + "/" + insn.name);
                                 })));
 

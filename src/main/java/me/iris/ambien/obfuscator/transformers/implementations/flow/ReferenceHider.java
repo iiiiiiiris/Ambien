@@ -83,26 +83,19 @@ public class ReferenceHider extends Transformer {
                                 dynamicInvokerList.add(new LdcInsnNode(targetMethod));
                                 dynamicInvokerList.add(new LdcInsnNode(desc));
                                 dynamicInvokerList.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name, callSite.name, callSite.desc, false));
-                                dynamicInvokerList.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/invoke/MutableCallSite", "dynamicInvoker", "()Ljava/lang/invoke/MethodHandle;", false));
+                                dynamicInvokerList.add(new MethodInsnNode(INVOKEVIRTUAL,
+                                        "java/lang/invoke/MutableCallSite", "dynamicInvoker", "()Ljava/lang/invoke/MethodHandle;", false));
+                                dynamicInvokerList.add(new MethodInsnNode(INVOKEVIRTUAL,
+                                        "java/lang/invoke/MethodHandle", "invoke", desc, false));
 
-                                // Instruction for invoking the call site
-                                final MethodInsnNode invokeCallSite = new MethodInsnNode(INVOKEVIRTUAL,
-                                        "java/lang/invoke/MethodHandle", "invoke", desc, false);
-
-                                if (desc.equals("()V")) {
-                                    final InsnList copy = new InsnList();
-                                    copy.add(dynamicInvokerList);
-                                    copy.add(invokeCallSite);
-
-                                    if (!SizeEvaluator.willOverflow(methodWrapper, copy)) {
-                                        methodWrapper.getInstructionsList().insertBefore(insn, dynamicInvokerList);
-                                        methodWrapper.replaceInstruction(insn, invokeCallSite);
-                                    } else
+                                if (desc.equals("()V") || onlyNoArgs.isEnabled()) {
+                                    if (!SizeEvaluator.willOverflow(methodWrapper, dynamicInvokerList))
+                                        methodWrapper.replaceInstruction(insn, dynamicInvokerList);
+                                    else
                                         Ambien.LOGGER.error("Can't hide method reference without overflowing. Owner: {} | Method: {} | Target method: {}", owner, methodWrapper.getNode().name, targetMethod);
-                                } else if (!onlyNoArgs.isEnabled()) {
+                                } else {
+                                    // Get the first argument
                                     final int argCount = desc.substring(desc.indexOf('('), desc.indexOf(')')).split(";").length;
-                                    System.out.println(argCount);
-
                                     AbstractInsnNode firstArgInsn = null;
                                     for (int i = 0; i < argCount + 1; i++) {
                                         if (i == 0) firstArgInsn = insn;
@@ -110,13 +103,13 @@ public class ReferenceHider extends Transformer {
                                     }
 
                                     if (firstArgInsn != null) {
-                                        final InsnList copy = new InsnList();
-                                        copy.add(dynamicInvokerList);
-                                        copy.add(invokeCallSite);
+                                        if (!SizeEvaluator.willOverflow(methodWrapper, dynamicInvokerList)) {
+                                            // Remove the invoke call from the list, we have to add this after the method's arguments are pushed onto the stack
+                                            final MethodInsnNode invokeNode = (MethodInsnNode) dynamicInvokerList.getLast();
+                                            dynamicInvokerList.remove(invokeNode);
 
-                                        if (!SizeEvaluator.willOverflow(methodWrapper, copy)) {
                                             methodWrapper.getInstructionsList().insertBefore(firstArgInsn, dynamicInvokerList);
-                                            methodWrapper.replaceInstruction(insn, invokeCallSite);
+                                            methodWrapper.replaceInstruction(insn, invokeNode);
                                         } else
                                             Ambien.LOGGER.error("Can't hide method reference without overflowing. Owner: {} | Method: {} | Target method: {}", owner, methodWrapper.getNode().name, targetMethod);
                                     }

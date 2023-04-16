@@ -19,7 +19,7 @@ public class Ambien {
     // GLOBALS
     public static final Ambien get = new Ambien();
     public static final Logger LOGGER = LoggerFactory.getLogger("Ambien");
-    public static final String VERSION = "1.4.1",
+    public static final String VERSION = "1.5.0",
             CLASSIFIER = "beta";
 
     // MANAGERS
@@ -99,6 +99,7 @@ public class Ambien {
         for (Transformer transformer : transformerManager.getTransformers()) {
             if (!transformer.isEnabled()) continue;
             if (!experimentalTransformers && transformer.getStability().equals(Stability.EXPERIMENTAL)) continue;
+            LOGGER.info("Executing transformer: {}", transformer.getName());
             transformer.transform(wrapper);
         }
 
