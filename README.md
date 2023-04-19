@@ -6,17 +6,17 @@
 | String encryption       | ✅ |
 | Number obfuscation      | ✅ |
 | Flow obfuscation        | ✅ |
-| Reference obfuscation   | 🚫 |
+| Reference obfuscation   | ✅ |
 | Crashers                | ✅ |
 | Miscellaneous ZIP stuff | ✅ |
 | GUI                     | 🚫 |
 
-**As of 1.4.0-beta release**
-
-###### *Unimplemented features will be added at some point*
+**_As of 1.5.0-beta release, unimplemented features will be added at some point_**
 
 # Usage
-Download the latest jar [**here**](https://github.com/iiiiiiiris/Ambien/releases/latest)
+* Download the latest jar [**here**](https://github.com/iiiiiiiris/Ambien/releases/latest)
+  * The jar ending in `-beta` is the obfuscator itself.
+  * The jar ending in `-lib` is an optional library you can use to exclude methods & classes.
 
 **Before using:**
 * Ambien MUST be ran with Java 8+
@@ -27,8 +27,6 @@ Run the jar using the `--create-config` argument to create a base config
 Then run the Ambien jar using the `-config` argument (including the path to your config)
 
 ###### To see all the arguments Ambien offers, you can use the '-help' argument
-
-**Note to developers: to see debug output, add `-Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG` to vm options**
 
 # Example obfuscation
 
@@ -67,7 +65,7 @@ public static void main(String[] args) throws Throwable {
             var10003 = true;
             if (((31 | -116 | -22) ^ -37) != ((48 | 50 | -128) ^ 55)) {
             }
-    
+
             boolean var6 = false;
             if (var6) {
             }
@@ -98,6 +96,10 @@ Transformer settings can be seen [here](https://vip.ci/?8cc3559a08c792dc#Bru8XXG
 <img src="./web/media/crasher-procyon.png" width="400" height="200">
 
 **As of 1.2.1-beta release**
+
+## Contributing
+* Simply clone this repository
+* Add `-Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG` to vm options to see debug output
 
 ## Dependencies
 [Lombok](https://projectlombok.org/), [ASM](https://asm.ow2.io/), [SLF4J](https://www.slf4j.org/), [GSON](https://github.com/google/gson) & [JCommander](https://github.com/cbeust/jcommander)

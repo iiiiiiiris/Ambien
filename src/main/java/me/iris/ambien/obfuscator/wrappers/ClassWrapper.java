@@ -3,10 +3,12 @@ package me.iris.ambien.obfuscator.wrappers;
 import lombok.Getter;
 import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.asm.CompetentClassWriter;
+import me.iris.ambien.obfuscator.builders.MethodBuilder;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.ArrayList;
@@ -16,7 +18,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("CastCanBeRemovedNarrowingVariableType")
-public class ClassWrapper {
+public class ClassWrapper implements Opcodes {
     @Getter
     private final String name;
 
@@ -39,6 +41,30 @@ public class ClassWrapper {
         Arrays.stream(node.methods.toArray())
                 .map(methodObj -> (MethodNode)methodObj)
                 .forEach(methodNode -> methods.add(new MethodWrapper(methodNode)));
+    }
+
+    public MethodNode getStaticInitializer() {
+        // Check if the init method already exists in the class.
+        for (MethodWrapper wrapper : methods) {
+            if (wrapper.getNode().name.equals("<clinit>"))
+                return wrapper.getNode();
+        }
+
+        // Create init method & return it
+        final MethodBuilder builder = new MethodBuilder()
+                .setAccess(ACC_STATIC)
+                .setName("<clinit>")
+                .setDesc("()V");
+        final MethodNode methodNode = builder.buildNode();
+
+        // Add return insn
+        methodNode.instructions.add(new InsnNode(RETURN));
+
+        // Add method to class
+        addMethod(methodNode);
+
+        // Return method
+        return methodNode;
     }
 
     public List<MethodWrapper> getTransformableMethods() {

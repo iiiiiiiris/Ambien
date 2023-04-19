@@ -88,6 +88,7 @@ public class Ambien {
                 LOGGER.warn("!!! You are not using the newest version of Ambien !!!");
                 LOGGER.info("Your version: {}-{}", VERSION, CLASSIFIER);
                 LOGGER.info("Latest version: {}-{}", newestVersion, newestClassifier);
+                LOGGER.info("You can download the latest version here: https://github.com/iiiiiiiris/Ambien/releases/latest");
             } else
                 LOGGER.info("You are using the latest version of Ambien.");
         } catch (IOException e) {

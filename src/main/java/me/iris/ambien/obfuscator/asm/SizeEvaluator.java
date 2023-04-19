@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.asm;
 
 import me.iris.ambien.obfuscator.wrappers.MethodWrapper;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.CodeSizeEvaluator;
 import org.objectweb.asm.tree.*;
 
 public class SizeEvaluator implements Opcodes {
@@ -14,6 +15,17 @@ public class SizeEvaluator implements Opcodes {
      */
     public static boolean willOverflow(final MethodWrapper wrapper, final InsnList list) {
         return wrapper.getSize() + getInsnListSize(list) >= MAX_SIZE;
+    }
+
+    /**
+     * @param node Owner method node
+     * @param list List of instructions that will be added
+     * @return True if addition will be more than 64kb
+     */
+    public static boolean willOverflow(final MethodNode node, final InsnList list) {
+        CodeSizeEvaluator evaluator = new CodeSizeEvaluator(null);
+        node.accept(evaluator);
+        return evaluator.getMaxSize() + getInsnListSize(list) >= MAX_SIZE;
     }
 
     /**
