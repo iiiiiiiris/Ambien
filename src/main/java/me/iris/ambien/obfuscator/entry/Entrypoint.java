@@ -65,7 +65,7 @@ public class Entrypoint {
                 Settings.create();
                 return;
             } else
-                Settings.load(new File(ambienArgs.configLocation));
+                Settings.load(new File(ambienArgs.configLocation), ambienArgs.experimentalTransformers);
 
             // Gather information about the input jar
             Ambien.get.preTransform();

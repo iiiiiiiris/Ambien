@@ -5,6 +5,7 @@ import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.settings.data.implementations.ListSetting;
 import me.iris.ambien.obfuscator.settings.data.implementations.NumberSetting;
 import me.iris.ambien.obfuscator.settings.data.implementations.StringSetting;
+import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.settings.data.Setting;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
@@ -41,9 +42,12 @@ public class Settings {
             transformerObj.addProperty("name", transformer.getName());
 
             for (Setting<?> setting : transformer.getSettings()) {
-                if (setting instanceof BooleanSetting)
-                    transformerObj.addProperty(setting.getName(), ((BooleanSetting)setting).isEnabled());
-                else if (setting instanceof StringSetting)
+                if (setting instanceof BooleanSetting) {
+                    if (setting.getName().equals("enabled"))
+                        transformerObj.addProperty(setting.getName(), transformer.isEnabledByDefault());
+                    else
+                        transformerObj.addProperty(setting.getName(), ((BooleanSetting)setting).isEnabled());
+                } else if (setting instanceof StringSetting)
                     transformerObj.addProperty(setting.getName(), ((StringSetting)setting).getValue());
                 else if (setting instanceof NumberSetting)
                     transformerObj.addProperty(setting.getName(), ((NumberSetting<?>)setting).getValue());
@@ -75,7 +79,7 @@ public class Settings {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static void load(final File file) throws IOException {
+    public static void load(final File file, final boolean experimentalTransformers) throws IOException {
         // Parse file
         final JsonObject obj = JsonParser.parseReader(new BufferedReader(new FileReader(file))).getAsJsonObject();
 
@@ -125,6 +129,12 @@ public class Settings {
             // Set enabled state
             transformer.setEnabled(transformerObj.get("enabled").getAsBoolean());
 
+            // Warn if the transformer is experimental
+            if (transformer.isEnabled() && transformer.getStability().equals(Stability.EXPERIMENTAL) && !experimentalTransformers) {
+                Ambien.LOGGER.warn("Ignoring enabled transformer \"{}\" because Ambien was ran without the experimental flag.", transformer.getName());
+                continue;
+            }
+
             // Assume rest of the entries are settings of the transformer
             for (Setting<?> setting : transformer.getSettings()) {
                 final JsonElement element = transformerObj.get(setting.getName());
@@ -145,8 +155,17 @@ public class Settings {
                             numberSetting.setValue(element.getAsDouble());
                     } else if (setting instanceof ListSetting) {
                         final ListSetting listSetting = (ListSetting)setting;
+
+                        // Add options
                         final JsonArray array = element.getAsJsonArray();
                         for (int j = 0; j < array.size(); j++) {
+                            // Clear settings for first use
+                            if (!listSetting.isOptionsCleared()) {
+                                listSetting.getOptions().clear();
+                                listSetting.setOptionsCleared(true);
+                            }
+
+                            // Add option
                             listSetting.getOptions().add(array.get(j).getAsString());
                         }
                     }

@@ -29,6 +29,7 @@ public abstract class Transformer implements Opcodes {
     @Getter
     private final String description = getClass().getAnnotation(TransformerInfo.class).description();
 
+    @Getter
     private final boolean enabledByDefault = getClass().getAnnotation(TransformerInfo.class).enabledByDefault();
     public final BooleanSetting enabled = new BooleanSetting("enabled", enabledByDefault);
     public final ListSetting excludedClasses = new ListSetting("excluded-classes", new ArrayList<>());
