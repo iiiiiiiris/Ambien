@@ -46,9 +46,9 @@ public class TransformerManager {
                 new RemoveUnused(),
 
                 // Miscellaneous
-                new LocalVariableRenamer(),
                 new LineNumberRandomizer(),
-                new ArgumentChecker()
+                new ArgumentChecker(),
+                new Remapper()
         ));
 
         // Sort transformers by ordinal

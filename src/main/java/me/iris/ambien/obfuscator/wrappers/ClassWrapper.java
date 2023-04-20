@@ -1,6 +1,7 @@
 package me.iris.ambien.obfuscator.wrappers;
 
 import lombok.Getter;
+import lombok.Setter;
 import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.asm.CompetentClassWriter;
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
@@ -23,7 +24,8 @@ public class ClassWrapper implements Opcodes {
     private final String name;
 
     @Getter
-    private final ClassNode node;
+    @Setter
+    private ClassNode node;
 
     @Getter
     private final List<MethodWrapper> methods;
