@@ -2,7 +2,13 @@ package me.iris.ambien.obfuscator.utilities;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class StringUtil {
@@ -37,5 +43,18 @@ public class StringUtil {
         }
 
         return builder.toString();
+    }
+
+    public boolean containsNonAlphabeticalChars(final String str) {
+        final List<Character> charList = IntStream
+                .range(0, CHARS.length)
+                .mapToObj(c -> CHARS[c])
+                .collect(Collectors.toList());
+        for (char c : str.toCharArray()) {
+            if (charList.contains(c))
+                return true;
+        }
+
+        return false;
     }
 }

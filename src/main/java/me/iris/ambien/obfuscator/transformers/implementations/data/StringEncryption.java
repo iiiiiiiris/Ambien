@@ -154,32 +154,8 @@ public class StringEncryption extends Transformer {
         // List for our decryption routine
         final InsnList list = new InsnList();
 
-        // Convert encrypted string into byte array
-        final byte[] bytes = reverseArray(encryptedString.getBytes());
-
-        // Create new byte array
-        list.add(new IntInsnNode(BIPUSH, bytes.length));
-        list.add(new IntInsnNode(NEWARRAY, T_BYTE));
-
-        // Add bytes to array
-        for (int i = 0; i < bytes.length; i++) {
-            final byte b = bytes[i];
-            list.add(new InsnNode(DUP));
-            list.add(new IntInsnNode(BIPUSH, i));
-            list.add(new IntInsnNode(BIPUSH, b));
-            list.add(new InsnNode(BASTORE));
-        }
-
-        // Store byte array
-        final int byteArrayIdx = localCounter.incrementAndGet();
-        list.add(new VarInsnNode(ASTORE, byteArrayIdx));
-
-        // Create new string w/ byte array
-        list.add(new TypeInsnNode(NEW, "java/lang/String"));
-        list.add(new InsnNode(DUP));
-        list.add(new VarInsnNode(ALOAD, byteArrayIdx));
-        list.add(new MethodInsnNode(INVOKESTATIC, classWrapper.getNode().name, arrRevNode.name, arrRevNode.desc, false));
-        list.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/String", "<init>", "([B)V", false));
+        // Add encrypted string
+        list.add(new LdcInsnNode(encryptedString));
 
         // Get the first decryption key
         list.add(new FieldInsnNode(GETSTATIC, classWrapper.getNode().name, keyFieldName, "I"));

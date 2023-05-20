@@ -55,17 +55,13 @@ public class XorBooleans extends Transformer {
                             // repeating the operation can cause some decompilers to produce a retarded output
                             final InsnList xorInsns = new InsnList();
                             if (prevOpcode == ICONST_0) {
-                                for (int i = 0; i < MathUtil.RANDOM.nextInt(10); i++) {
-                                    xorInsns.add(new InsnNode(ICONST_0));
-                                    xorInsns.add(new InsnNode(ICONST_1));
-                                    xorInsns.add(new InsnNode(IXOR));
-                                }
+                                xorInsns.add(new InsnNode(ICONST_0));
+                                xorInsns.add(new InsnNode(ICONST_1));
+                                xorInsns.add(new InsnNode(IXOR));
                             } else if (prevOpcode == ICONST_1) {
-                                for (int i = 0; i < MathUtil.RANDOM.nextInt(10); i++) {
-                                    xorInsns.add(new InsnNode(ICONST_1));
-                                    xorInsns.add(new InsnNode(ICONST_0));
-                                    xorInsns.add(new InsnNode(IXOR));
-                                }
+                                xorInsns.add(new InsnNode(ICONST_1));
+                                xorInsns.add(new InsnNode(ICONST_0));
+                                xorInsns.add(new InsnNode(IXOR));
                             }
 
                             // replace default value

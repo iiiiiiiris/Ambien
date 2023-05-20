@@ -18,6 +18,8 @@ import org.objectweb.asm.tree.LocalVariableNode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @TransformerInfo(
         name = "remapper",
@@ -32,7 +34,6 @@ public class Remapper extends Transformer {
     /**
      * Options/modes:
      * random ~ Makes names random characters at a random length
-     * alphabet ~ Example: a -> b -> c, etc
      * barcode ~ Example: IllllIIIIlIlIIll
      */
     public final StringSetting dictionary = new StringSetting("dictionary", "random");
@@ -50,7 +51,7 @@ public class Remapper extends Transformer {
         // Generate map
         jarWrapper.getClasses().forEach(classWrapper -> {
             final ClassNode node = classWrapper.getNode();
-            // TODO: Check for invalid chars in the name, ignore if so
+            if (StringUtil.containsNonAlphabeticalChars(node.name)) return;
 
             final String newName = getNewName();
             map.put(node.name, newName);
@@ -72,9 +73,7 @@ public class Remapper extends Transformer {
     private void remapLocalVariables(JarWrapper wrapper) {
         getClasses(wrapper).forEach(classWrapper -> {
             classWrapper.getTransformableMethods().forEach(methodWrapper -> {
-                if (!methodWrapper.hasLocalVariables()){
-                    return;
-                }
+                if (!methodWrapper.hasLocalVariables()) return;
                 for (Object localVarObj : methodWrapper.getNode().localVariables) {
                     //noinspection CastCanBeRemovedNarrowingVariableType
                     final LocalVariableNode localVarNode = (LocalVariableNode)localVarObj;
@@ -86,20 +85,16 @@ public class Remapper extends Transformer {
     }
 
     private String getNewName() {
-        switch (dictionary.getValue()) {
-            case "alphabet": {
-                // unfinished, classic me :)
-                return "a";
-            }
-            case "barcode": {
-                final int len = MathUtil.randomInt(10, 50);
-                final StringBuilder name = new StringBuilder();
-                for (int i = 0; i < len; i++)
-                    name.append(MathUtil.RANDOM.nextBoolean() ? "I" : "l");
-                return name.toString();
-            }
-            default: // random string
-                return StringUtil.randomString(MathUtil.randomInt(10, 50));
+        // barcode string
+        if (dictionary.getValue().equals("barcode")) {
+            final int len = MathUtil.randomInt(10, 50);
+            final StringBuilder name = new StringBuilder();
+            for (int i = 0; i < len; i++)
+                name.append(MathUtil.RANDOM.nextBoolean() ? "I" : "l");
+            return name.toString();
         }
+
+        // random string
+        return StringUtil.randomString(MathUtil.randomInt(10, 50));
     }
 }
