@@ -30,14 +30,10 @@ public class ClassWrapper implements Opcodes {
     @Getter
     private final List<MethodWrapper> methods;
 
-    @Getter
-    private final boolean isLibraryClass;
-
-    public ClassWrapper(String name, ClassNode node, boolean isLibraryClass) {
+    public ClassWrapper(String name, ClassNode node) {
         this.name = name;
         this.node = node;
         this.methods = new ArrayList<>();
-        this.isLibraryClass = isLibraryClass;
 
         // Import methods from class
         Arrays.stream(node.methods.toArray())

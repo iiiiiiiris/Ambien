@@ -64,7 +64,7 @@ public class RedHerring extends Transformer {
             // Write jar to separate stream
             final ByteArrayOutputStream jarBufferStream = new ByteArrayOutputStream();
             try (JarOutputStream jarOutputStream = new JarOutputStream(jarBufferStream)) {
-                final ClassWrapper classWrapper = new ClassWrapper("Ambien.class", classNode, false);
+                final ClassWrapper classWrapper = new ClassWrapper("Ambien.class", classNode);
                 IOUtil.writeEntry(jarOutputStream, "Ambien.class", classWrapper.toByteArray());
             } catch (IOException e) {
                 throw new RuntimeException(e);

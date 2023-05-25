@@ -32,6 +32,7 @@ public class Settings {
         obj.add("libraries", new JsonArray());
         obj.add("exclusions", new JsonArray());
         obj.addProperty("remove-exclude-annotations", true);
+        obj.addProperty("include-libraries", true);
 
         // Array all transformers will be in
         final JsonArray transformersArr = new JsonArray();
@@ -109,6 +110,9 @@ public class Settings {
 
         // Set remove exclude annotations setting
         Ambien.get.removeExcludeAnnotations = obj.get("remove-exclude-annotations").getAsBoolean();
+
+        // Set include libraries setting
+        Ambien.get.includeLibraries = obj.get("include-libraries").getAsBoolean();
 
         // Get transformers array
         final JsonArray transformersArr = obj.get("transformers").getAsJsonArray();

@@ -31,11 +31,14 @@ public class JarWrapper {
     @Getter
     private final List<ByteArrayOutputStream> outputStreams;
 
+    private final List<JarWrapper> libraries;
+
     public JarWrapper() {
         this.directories = new ArrayList<>();
         this.classes = new ArrayList<>();
         this.resources = new HashMap<>();
         this.outputStreams = new ArrayList<>();
+        this.libraries = new ArrayList<>();
     }
 
     public JarWrapper from(final File file) throws IOException {
@@ -66,7 +69,7 @@ public class JarWrapper {
                 final ClassNode node = new ClassNode();
                 reader.accept(node, ClassReader.SKIP_FRAMES);
 
-                classes.add(new ClassWrapper(name, node, false));
+                classes.add(new ClassWrapper(name, node));
                 Ambien.LOGGER.info("Loaded class: {}", name);
             } else if (name.endsWith("/"))
                 directories.add(name);
@@ -81,7 +84,7 @@ public class JarWrapper {
         return this;
     }
 
-    public JarWrapper importLibrary(final String path) throws IOException {
+    public void importLibrary(final String path) throws IOException {
         final File file = new File(path);
         if (!file.exists())
             throw new RuntimeException(String.format("Library jar \"%s\" file doesn't exist.", path));
@@ -95,6 +98,9 @@ public class JarWrapper {
 
         // Get jar file entries
         final Enumeration<JarEntry> entries = jarFile.entries();
+
+        // Wrapper for the library
+        final JarWrapper wrapper = new JarWrapper();
 
         // Enumerate
         while (entries.hasMoreElements()) {
@@ -110,12 +116,18 @@ public class JarWrapper {
                 final ClassNode node = new ClassNode();
                 reader.accept(node, ClassReader.SKIP_FRAMES);
 
-                classes.add(new ClassWrapper(name, node, true));
-                Ambien.LOGGER.info("Loaded class: {}", name);
+                wrapper.classes.add(new ClassWrapper(name, node));
+                Ambien.LOGGER.info("Loaded library class: {}", name);
+            } else if (name.endsWith("/"))
+                directories.add(name);
+            else {
+                final byte[] bytes = IOUtil.streamToArray(stream);
+                wrapper.resources.put(name, bytes);
+                Ambien.LOGGER.info("Loaded library resource: {}", name);
             }
         }
 
-        return this;
+        this.libraries.add(wrapper);
     }
 
     public void to() throws IOException {
@@ -161,9 +173,6 @@ public class JarWrapper {
 
         // Add classes
         classes.forEach(classWrapper -> {
-            // Ignore library classes
-            if (classWrapper.isLibraryClass()) return;
-
             try {
                 String name = classWrapper.getName();
                 if (Ambien.get.transformerManager.getTransformer("folder-classes").isEnabled())
@@ -173,6 +182,36 @@ public class JarWrapper {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        });
+
+        // Repeat this process will all library jars
+        libraries.forEach(library -> {
+            // Add directories
+            library.directories.forEach(directory -> {
+                try {
+                    IOUtil.writeDirectoryEntry(stream, directory);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            // Add resources
+            library.resources.forEach((name, bytes) -> {
+                try {
+                    IOUtil.writeEntry(stream, name, bytes);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            // Add classes
+            library.classes.forEach(classWrapper -> {
+                try {
+                    IOUtil.writeEntry(stream, classWrapper.getName(), classWrapper.toByteArray());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         });
 
         // Set zip comment

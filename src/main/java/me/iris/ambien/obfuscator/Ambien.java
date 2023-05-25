@@ -31,7 +31,8 @@ public class Ambien {
             outputJar;
     public final List<String> excludedClasses = new ArrayList<>(),
             libraries = new ArrayList<>();
-    public boolean removeExcludeAnnotations;
+    public boolean removeExcludeAnnotations,
+            includeLibraries;
 
     private JarWrapper jarWrapper;
 
@@ -59,7 +60,7 @@ public class Ambien {
         LOGGER.info("Importing libraries...");
         if (!libraries.isEmpty()) {
             for (final String lib : libraries) {
-                jarWrapper = jarWrapper.importLibrary(lib);
+                jarWrapper.importLibrary(lib);
                 LOGGER.info("Imported library: {}", lib);
             }
         }
