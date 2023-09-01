@@ -14,8 +14,12 @@ public class MathUtil {
         return RANDOM.nextInt();
     }
 
+//    public int randomInt(final int min, final int max) {
+//        return min + (RANDOM.nextInt(max));
+//    }
+
     public int randomInt(final int min, final int max) {
-        return min + (RANDOM.nextInt(max));
+        return RANDOM.nextInt(max - min) + min;
     }
 
     public int[] getTwoRandomInts(final int min, final int max) {

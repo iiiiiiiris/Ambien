@@ -20,17 +20,24 @@ public class TransformerManager {
                 // Control flow
                 new UselessInstructions(),
                 new FakeJumps(),
+                new JunkCode(),
                 new GotoShenanigans(),
+                new MyJ2CFlow(),
                 new ReferenceHider(),
+                new CaesiumReference(),
+                new Polymorph(),
 
                 // Data
                 new NumberObfuscation(),
                 new StringEncryption(),
+                new SouvenirStringEncryption(),
+                new ColonialStringEncryption(),
                 new Shuffle(),
                 new XorBooleans(),
 
                 // Exploits
                 new Crasher(),
+                new DuplicateResources(),
                 new ModifyAccess(),
 
                 // Packaging
@@ -48,6 +55,8 @@ public class TransformerManager {
                 // Miscellaneous
                 new LineNumberRandomizer(),
                 new ArgumentChecker(),
+                new Ahegao(),
+                new Metadata(),
                 new Remapper()
         ));
 

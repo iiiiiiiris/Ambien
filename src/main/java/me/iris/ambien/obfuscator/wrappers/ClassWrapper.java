@@ -30,10 +30,14 @@ public class ClassWrapper implements Opcodes {
     @Getter
     private final List<MethodWrapper> methods;
 
-    public ClassWrapper(String name, ClassNode node) {
+    @Getter
+    private final boolean isLibraryClass;
+
+    public ClassWrapper(String name, ClassNode node, boolean isLibraryClass) {
         this.name = name;
         this.node = node;
         this.methods = new ArrayList<>();
+        this.isLibraryClass = isLibraryClass;
 
         // Import methods from class
         Arrays.stream(node.methods.toArray())
@@ -77,6 +81,11 @@ public class ClassWrapper implements Opcodes {
 
     public boolean isEnum() {
         return (node.access & Opcodes.ACC_ENUM) == Opcodes.ACC_ENUM;
+    }
+
+
+    public boolean isAnnotation() {
+        return (node.access & Opcodes.ACC_ANNOTATION) == Opcodes.ACC_ANNOTATION;
     }
 
     public CopyOnWriteArrayList<FieldNode> getFields() {

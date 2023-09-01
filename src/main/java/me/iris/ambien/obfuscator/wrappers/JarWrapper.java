@@ -2,16 +2,26 @@ package me.iris.ambien.obfuscator.wrappers;
 
 import lombok.Getter;
 import me.iris.ambien.obfuscator.Ambien;
+import me.iris.ambien.obfuscator.transformers.implementations.exploits.Crasher;
+import me.iris.ambien.obfuscator.transformers.implementations.exploits.DuplicateResources;
 import me.iris.ambien.obfuscator.transformers.implementations.packaging.Comment;
+import me.iris.ambien.obfuscator.transformers.implementations.packaging.FolderClasses;
 import me.iris.ambien.obfuscator.utilities.IOUtil;
+import me.iris.ambien.obfuscator.utilities.StringUtil;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.analysis.Analyzer;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.BasicValue;
+import org.objectweb.asm.tree.analysis.BasicVerifier;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -31,14 +41,11 @@ public class JarWrapper {
     @Getter
     private final List<ByteArrayOutputStream> outputStreams;
 
-    private final List<JarWrapper> libraries;
-
     public JarWrapper() {
         this.directories = new ArrayList<>();
         this.classes = new ArrayList<>();
         this.resources = new HashMap<>();
         this.outputStreams = new ArrayList<>();
-        this.libraries = new ArrayList<>();
     }
 
     public JarWrapper from(final File file) throws IOException {
@@ -69,7 +76,7 @@ public class JarWrapper {
                 final ClassNode node = new ClassNode();
                 reader.accept(node, ClassReader.SKIP_FRAMES);
 
-                classes.add(new ClassWrapper(name, node));
+                classes.add(new ClassWrapper(name, node, false));
                 Ambien.LOGGER.info("Loaded class: {}", name);
             } else if (name.endsWith("/"))
                 directories.add(name);
@@ -84,7 +91,7 @@ public class JarWrapper {
         return this;
     }
 
-    public void importLibrary(final String path) throws IOException {
+    public JarWrapper importLibrary(final String path) throws IOException {
         final File file = new File(path);
         if (!file.exists())
             throw new RuntimeException(String.format("Library jar \"%s\" file doesn't exist.", path));
@@ -98,9 +105,6 @@ public class JarWrapper {
 
         // Get jar file entries
         final Enumeration<JarEntry> entries = jarFile.entries();
-
-        // Wrapper for the library
-        final JarWrapper wrapper = new JarWrapper();
 
         // Enumerate
         while (entries.hasMoreElements()) {
@@ -116,18 +120,12 @@ public class JarWrapper {
                 final ClassNode node = new ClassNode();
                 reader.accept(node, ClassReader.SKIP_FRAMES);
 
-                wrapper.classes.add(new ClassWrapper(name, node));
-                Ambien.LOGGER.info("Loaded library class: {}", name);
-            } else if (name.endsWith("/"))
-                directories.add(name);
-            else {
-                final byte[] bytes = IOUtil.streamToArray(stream);
-                wrapper.resources.put(name, bytes);
-                Ambien.LOGGER.info("Loaded library resource: {}", name);
+                classes.add(new ClassWrapper(name, node, true));
+                Ambien.LOGGER.info("Loaded class: {}", name);
             }
         }
 
-        this.libraries.add(wrapper);
+        return this;
     }
 
     public void to() throws IOException {
@@ -165,18 +163,48 @@ public class JarWrapper {
         // Add resources
         resources.forEach((name, bytes) -> {
             try {
+                if (Ambien.get.transformerManager.getTransformer("duplicate-resources").isEnabled() &&
+                    DuplicateResources.dupResources.isEnabled()
+                ) {
+                    for (int x = 1; x <= DuplicateResources.dupAmount.getValue(); x++)
+                        IOUtil.writeEntry(stream, name + "\u0000".repeat(x), IOUtil.duplicateData(bytes));
+                }
+
+                if (Ambien.get.transformerManager.getTransformer("folder-classes").isEnabled() &&
+                    FolderClasses.folderResources.isEnabled()
+                ) name += "/";
+
                 IOUtil.writeEntry(stream, name, bytes);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
 
+        Analyzer<BasicValue> analyzer = new Analyzer<>(new BasicVerifier());
         // Add classes
         classes.forEach(classWrapper -> {
+            // Ignore library classes
+            if (classWrapper.isLibraryClass()) return;
+
+            classWrapper.getNode().methods.forEach(methodNode -> {
+                try {
+                    analyzer.analyzeAndComputeMaxs(methodNode.name,methodNode);
+                } catch (AnalyzerException e) {
+                    e.addSuppressed(new Throwable("Found exception ClassName: " + classWrapper.getNode().name + " MethodName:" + methodNode.name));
+                }
+            });
+
             try {
                 String name = classWrapper.getName();
-                if (Ambien.get.transformerManager.getTransformer("folder-classes").isEnabled())
-                    name += "/";
+                if (Ambien.get.transformerManager.getTransformer("duplicate-resources").isEnabled() &&
+                    DuplicateResources.dupClasses.isEnabled()
+                ) {
+                    for (int x = 1; x <= DuplicateResources.dupAmount.getValue(); x++)
+                        IOUtil.writeEntry(stream, name + "\u0000".repeat(x), IOUtil.duplicateData(classWrapper.toByteArray()));
+                }
+                if (Ambien.get.transformerManager.getTransformer("folder-classes").isEnabled() &&
+                    FolderClasses.folderClasses.isEnabled()
+                ) name += "/";
 
                 IOUtil.writeEntry(stream, name, classWrapper.toByteArray());
             } catch (IOException e) {
@@ -184,35 +212,12 @@ public class JarWrapper {
             }
         });
 
-        // Repeat this process will all library jars
-        libraries.forEach(library -> {
-            // Add directories
-            library.directories.forEach(directory -> {
-                try {
-                    IOUtil.writeDirectoryEntry(stream, directory);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            // Add resources
-            library.resources.forEach((name, bytes) -> {
-                try {
-                    IOUtil.writeEntry(stream, name, bytes);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            // Add classes
-            library.classes.forEach(classWrapper -> {
-                try {
-                    IOUtil.writeEntry(stream, classWrapper.getName(), classWrapper.toByteArray());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        });
+        if (Ambien.get.transformerManager.getTransformer("crasher").isEnabled() && Crasher.shitClasses.isEnabled()) {
+            for (int i = 0; i < Crasher.shitAmount.getValue(); i++) {
+                Crasher.addShitClasses(null, stream);
+                Crasher.addShitClasses("META-INF/", stream);
+            }
+        }
 
         // Set zip comment
         if (Ambien.get.transformerManager.getTransformer("comment").isEnabled())

@@ -65,8 +65,10 @@ public class ReferenceHider extends Transformer {
                                 // Make sure the owner is loaded
                                 boolean isOwnerLoaded = false;
                                 for (ClassWrapper classWrapper1 : wrapper.getClasses()) {
-                                    if (classWrapper1.getNode().name.equals(insn.owner))
+                                    if (classWrapper1.getNode().name.equals(insn.owner)) {
                                         isOwnerLoaded = true;
+                                        break;
+                                    }
                                 }
                                 if (!isOwnerLoaded) {
                                     Ambien.LOGGER.debug("owner not loaded: " + insn.owner);
@@ -120,7 +122,7 @@ public class ReferenceHider extends Transformer {
 
     private MethodNode buildCallSite() {
         final MethodBuilder builder = new MethodBuilder()
-                .setName(StringUtil.randomString(MathUtil.randomInt(10, 50)))
+                .setName(StringUtil.genName(MathUtil.randomInt(10, 50)))
                 .setDesc("(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/invoke/MutableCallSite;")
                 .setAccess(ACC_PRIVATE | ACC_STATIC)
                 .setExceptions(new String[]{
@@ -167,19 +169,19 @@ public class ReferenceHider extends Transformer {
             node.visitMethodInsn(INVOKESPECIAL, "java/lang/invoke/MutableCallSite", "<init>", "(Ljava/lang/invoke/MethodHandle;)V", false);
             node.visitInsn(ARETURN);
 
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(10, 50)),
                     "Ljava/lang/String;", null, labelA, labelA, 0);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(10, 50)),
                     "Ljava/lang/String;", null, labelC, labelC, 1);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(10, 50)),
                     "Ljava/lang/String;", null, labelC, labelC, 2);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(10, 50)),
                     "Ljava/lang/Class;", null, labelA, labelC, 3);
 
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(10, 50)),
                     "Ljava/lang/invoke/MethodHandles$Lookup;", null, labelB, labelC, 4);
 
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(10, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(10, 50)),
                     "Ljava/lang/invoke/MethodHandle;", null, labelC, labelD, 5);
         } node.visitEnd();
 

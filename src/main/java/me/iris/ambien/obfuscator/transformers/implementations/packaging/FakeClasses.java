@@ -2,6 +2,7 @@ package me.iris.ambien.obfuscator.transformers.implementations.packaging;
 
 import me.iris.ambien.obfuscator.builders.ClassBuilder;
 import me.iris.ambien.obfuscator.settings.data.implementations.NumberSetting;
+import me.iris.ambien.obfuscator.settings.data.implementations.StringSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
@@ -22,16 +23,19 @@ import org.objectweb.asm.tree.ClassNode;
 )
 public class FakeClasses extends Transformer {
     public final NumberSetting<Integer> classes = new NumberSetting<>("classes", 50);
+    public final StringSetting dictionary = new StringSetting("dictionary", "random");
+    public final StringSetting prefix = new StringSetting("prefix", "");
 
     @Override
     public void transform(JarWrapper wrapper) {
         for (int i = 0; i < classes.getValue(); i++) {
+            String name = StringUtil.getNewName(dictionary.getValue(), prefix.getValue());
             final ClassBuilder builder = new ClassBuilder().
-                    setName(StringUtil.randomString(15)).
+                    setName(name).
                     setAccess(ACC_PUBLIC);
 
             final ClassNode node = builder.buildNode();
-            wrapper.getClasses().add(new ClassWrapper(node.name + ".class", node));
+            wrapper.getClasses().add(new ClassWrapper(node.name + ".class", node, false));
         }
     }
 }

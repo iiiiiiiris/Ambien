@@ -32,7 +32,6 @@ public class Settings {
         obj.add("libraries", new JsonArray());
         obj.add("exclusions", new JsonArray());
         obj.addProperty("remove-exclude-annotations", true);
-        obj.addProperty("include-libraries", true);
 
         // Array all transformers will be in
         final JsonArray transformersArr = new JsonArray();
@@ -92,6 +91,7 @@ public class Settings {
         Ambien.get.inputJar = obj.get("input").getAsString();
         Ambien.get.outputJar = obj.get("output").getAsString();
 
+        Ambien.get.naming = obj.get("naming").getAsString();
         // Get libraries
         final JsonArray libraries = obj.get("libraries").getAsJsonArray();
         for (int i = 0; i < libraries.size(); i++) {
@@ -110,9 +110,6 @@ public class Settings {
 
         // Set remove exclude annotations setting
         Ambien.get.removeExcludeAnnotations = obj.get("remove-exclude-annotations").getAsBoolean();
-
-        // Set include libraries setting
-        Ambien.get.includeLibraries = obj.get("include-libraries").getAsBoolean();
 
         // Get transformers array
         final JsonArray transformersArr = obj.get("transformers").getAsJsonArray();
@@ -147,8 +144,7 @@ public class Settings {
                         ((BooleanSetting)setting).setEnabled(element.getAsBoolean());
                     else if (setting instanceof StringSetting)
                         ((StringSetting)setting).setValue(element.getAsString());
-                    else if (setting instanceof NumberSetting) {
-                        final NumberSetting numberSetting = (NumberSetting)setting;
+                    else if (setting instanceof NumberSetting numberSetting) {
                         if (numberSetting.getValue() instanceof Integer)
                             numberSetting.setValue(element.getAsInt());
                         else if (numberSetting.getValue() instanceof Long)
@@ -157,8 +153,7 @@ public class Settings {
                             numberSetting.setValue(element.getAsFloat());
                         else if (numberSetting.getValue() instanceof Double)
                             numberSetting.setValue(element.getAsDouble());
-                    } else if (setting instanceof ListSetting) {
-                        final ListSetting listSetting = (ListSetting)setting;
+                    } else if (setting instanceof ListSetting listSetting) {
 
                         // Add options
                         final JsonArray array = element.getAsJsonArray();

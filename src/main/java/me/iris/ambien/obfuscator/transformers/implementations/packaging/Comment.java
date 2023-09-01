@@ -18,7 +18,7 @@ import me.iris.ambien.obfuscator.wrappers.JarWrapper;
         enabledByDefault = true
 )
 public class Comment extends Transformer {
-    public static final StringSetting commentText = new StringSetting("comment-text", "Obfuscated by Ambien\nSource code: https://github.com/iiiiiiiris/Ambien");
+    public static final StringSetting commentText = new StringSetting("comment-text", "Ambien");
 
     @Override
     public void transform(JarWrapper wrapper) { } // Transformation takes place when exporting
