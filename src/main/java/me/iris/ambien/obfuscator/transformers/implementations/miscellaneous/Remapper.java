@@ -7,7 +7,6 @@ import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.data.annotation.TransformerInfo;
-import me.iris.ambien.obfuscator.utilities.MathUtil;
 import me.iris.ambien.obfuscator.utilities.StringUtil;
 import me.iris.ambien.obfuscator.wrappers.ClassWrapper;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
@@ -18,8 +17,8 @@ import org.objectweb.asm.tree.LocalVariableNode;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
+import static me.iris.ambien.obfuscator.utilities.StringUtil.getNewName;
 
 @TransformerInfo(
         name = "remapper",
@@ -37,6 +36,7 @@ public class Remapper extends Transformer {
      * barcode ~ Example: IllllIIIIlIlIIll
      */
     public final StringSetting dictionary = new StringSetting("dictionary", "random");
+    public final StringSetting prefix = new StringSetting("prefix", "erxson_");
 
     @Override
     public void transform(JarWrapper wrapper) {
@@ -53,11 +53,10 @@ public class Remapper extends Transformer {
             final ClassNode node = classWrapper.getNode();
             if (StringUtil.containsNonAlphabeticalChars(node.name)) return;
 
-            final String newName = getNewName();
+            final String newName = getNewName(dictionary.getValue(), prefix.getValue());
             map.put(node.name, newName);
             wrappers.put(node.name, classWrapper);
         });
-
 
         // Apply map
         final SimpleRemapper remapper = new SimpleRemapper(map);
@@ -78,23 +77,9 @@ public class Remapper extends Transformer {
                     //noinspection CastCanBeRemovedNarrowingVariableType
                     final LocalVariableNode localVarNode = (LocalVariableNode)localVarObj;
                     if (localVarNode.name.equals("this")) continue;
-                    localVarNode.name = getNewName();
+                    localVarNode.name = getNewName(dictionary.getValue(), prefix.getValue());
                 }
             });
         });
-    }
-
-    private String getNewName() {
-        // barcode string
-        if (dictionary.getValue().equals("barcode")) {
-            final int len = MathUtil.randomInt(10, 50);
-            final StringBuilder name = new StringBuilder();
-            for (int i = 0; i < len; i++)
-                name.append(MathUtil.RANDOM.nextBoolean() ? "I" : "l");
-            return name.toString();
-        }
-
-        // random string
-        return StringUtil.randomString(MathUtil.randomInt(10, 50));
     }
 }

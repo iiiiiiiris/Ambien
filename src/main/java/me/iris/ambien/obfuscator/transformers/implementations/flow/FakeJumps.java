@@ -47,7 +47,7 @@ public class FakeJumps extends Transformer {
 
     private void injectFakeVarJump(final ClassWrapper wrapper, final MethodWrapper methodWrapper) {
         // Build method that returns a random int
-        final String randMethodName = StringUtil.randomString(20);
+        final String randMethodName = StringUtil.genName(20);
         final MethodBuilder randMethodBuilder = new MethodBuilder().setName(randMethodName).setAccess(ACC_PUBLIC | ACC_STATIC).setDesc("()I").setSignature(null);
         final MethodNode randMethodNode = randMethodBuilder.buildNode();
 

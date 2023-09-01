@@ -5,6 +5,7 @@ import me.iris.ambien.obfuscator.asm.SizeEvaluator;
 import me.iris.ambien.obfuscator.builders.FieldBuilder;
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
 import me.iris.ambien.obfuscator.settings.data.implementations.ListSetting;
+import me.iris.ambien.obfuscator.settings.data.implementations.StringSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
@@ -76,6 +77,8 @@ public class StringEncryption extends Transformer {
                 final AtomicInteger localCounter = new AtomicInteger(methodWrapper.getNode().maxLocals);
 
                 methodWrapper.getInstructions()
+//                        .filter(insn -> insn != null && insn.getOpcode() == LDC && insn instanceof LdcInsnNode)
+
                         .filter(insn -> insn.getOpcode() == LDC && insn instanceof LdcInsnNode)
                         .map(insn -> (LdcInsnNode)insn)
                         .forEach(ldc -> {
@@ -142,7 +145,7 @@ public class StringEncryption extends Transformer {
     private InsnList buildDecryptionRoutine(ClassWrapper classWrapper, final MethodNode arrRevNode, final MethodNode decryptionNode,
                                             String encryptedString, int key1, int key2, final AtomicInteger localCounter) {
         // Add first key as a field
-        final String keyFieldName = StringUtil.randomString(MathUtil.randomInt(10, 50));
+        final String keyFieldName = StringUtil.genName(MathUtil.randomInt(10, 50));
         final FieldBuilder fieldBuilder = new FieldBuilder()
                 .setName(keyFieldName)
                 .setDesc("I")
@@ -171,7 +174,7 @@ public class StringEncryption extends Transformer {
 
     private MethodNode buildArrReverser() {
         final MethodBuilder builder = new MethodBuilder()
-                .setName(StringUtil.randomString(MathUtil.randomInt(10, 50)))
+                .setName(StringUtil.genName(MathUtil.randomInt(10, 50)))
                 .setAccess(ACC_PRIVATE | ACC_STATIC)
                 .setDesc("([B)[B");
         final MethodNode node = builder.buildNode();
@@ -234,11 +237,11 @@ public class StringEncryption extends Transformer {
             node.visitInsn(ARETURN); // return array
 
             // add names to local variables
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "[B", null, labelA, labelD, 0);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "[B", null, labelA, labelF, 1);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "I", null, labelB, labelD, 2);
         } node.visitEnd();
 
@@ -247,7 +250,7 @@ public class StringEncryption extends Transformer {
 
     private MethodNode buildDecryptor() {
         final MethodBuilder builder = new MethodBuilder()
-                .setName(StringUtil.randomString(MathUtil.randomInt(10, 50)))
+                .setName(StringUtil.genName(MathUtil.randomInt(10, 50)))
                 .setAccess(ACC_PRIVATE | ACC_STATIC)
                 .setDesc(DECRYPTOR_DESCRIPTOR);
         final MethodNode node = builder.buildNode();
@@ -355,23 +358,23 @@ public class StringEncryption extends Transformer {
             node.visitInsn(ARETURN);
 
             // Add names to local variables
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "Ljava/lang/String;", null, labelD, labelD, 0);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "I", null, labelC, labelI, 1);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "I", null, labelA, labelA, 2);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "Ljava/util/Random;", null, labelA, labelB, 3);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "I", null, labelB, labelC, 4);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "I", null, labelC, labelH, 5);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "Ljava/lang/String;", null, labelD, labelE, 6);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "[C", null, labelE, labelJ, 7);
-            node.visitLocalVariable(StringUtil.randomString(MathUtil.randomInt(20, 50)),
+            node.visitLocalVariable(StringUtil.genName(MathUtil.randomInt(20, 50)),
                     "I", null, labelF, labelH, 8);
         } node.visitEnd();
 

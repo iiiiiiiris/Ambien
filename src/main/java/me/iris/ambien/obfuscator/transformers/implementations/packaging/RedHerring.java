@@ -1,7 +1,10 @@
 package me.iris.ambien.obfuscator.transformers.implementations.packaging;
 
+import me.iris.ambien.obfuscator.Ambien;
 import me.iris.ambien.obfuscator.builders.ClassBuilder;
 import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
+import me.iris.ambien.obfuscator.settings.data.implementations.ListSetting;
+import me.iris.ambien.obfuscator.settings.data.implementations.StringSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
@@ -10,10 +13,14 @@ import me.iris.ambien.obfuscator.utilities.IOUtil;
 import me.iris.ambien.obfuscator.utilities.MathUtil;
 import me.iris.ambien.obfuscator.wrappers.ClassWrapper;
 import me.iris.ambien.obfuscator.wrappers.JarWrapper;
-import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.jar.JarOutputStream;
 
@@ -28,49 +35,76 @@ import java.util.jar.JarOutputStream;
         description = "Adds a fake jar before the real jar"
 )
 public class RedHerring extends Transformer {
+
     /**
      * Adds junk data instead of a class file, this will result in a smaller jar when using this transformer
      */
-    public static final BooleanSetting corrupt = new BooleanSetting("corrupt", false);
+    List<String> messagesList = new ArrayList<>(Arrays.asList(
+            "своего безглазого парнокопытного деда декомпиль, бездарность | you_need",
+            "лучше купи этот плагин) | to_train",
+            "дискорд: erxson#0 | more_bro"
+    ));
+    public static BooleanSetting corrupt = new BooleanSetting("corrupt", false);
+    public static StringSetting className = new StringSetting("class-name", "erxson");
+    public final ListSetting watermark = new ListSetting("text", messagesList);
 
     @Override
     public void transform(JarWrapper wrapper) {
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        // Write fake jar contents
         if (corrupt.isEnabled()) {
-            // Write jar header to stream
             stream.write(0x50);
             stream.write(0x4B);
             stream.write(0x03);
             stream.write(0x04);
-
-            // Get random bytes
             final Random rand = new Random();
             final byte[] bytes = new byte[MathUtil.randomInt(1, 25)];
             rand.nextBytes(bytes);
-
-            // Write random bytes to stream
             try {
                 stream.write(bytes);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            // Create random class
-            final ClassBuilder classBuilder = new ClassBuilder().setName("Ambien").setSuperName("Ambien").setAccess(ACC_PUBLIC);
+            String name = className.getValue();
+            final ClassBuilder classBuilder = new ClassBuilder().setName(name).setSuperName(name).setAccess(ACC_PUBLIC).setVersion(V1_5);
             final ClassNode classNode = classBuilder.buildNode();
 
-            // Write jar to separate stream
+            if (!watermark.getOptions().get(0).equals("")) {
+                List<String> inputList = watermark.getOptions();
+                String[][] messages = new String[inputList.size()][2];
+
+                for (int i = 0; i < inputList.size(); i++) {
+                    String[] parts = inputList.get(i).split("\\s*\\|\\s*", -1);
+                    messages[i][0] = parts[0].trim(); // Текст до |
+                    messages[i][1] = parts[1].trim(); // Текст после |
+                }
+
+                for (String[] messageData : messages) {
+                    FieldNode fieldNode = new FieldNode(ACC_STATIC, messageData[1], "Ljava/lang/String;", null, null);
+                    classNode.fields.add(fieldNode);
+                }
+
+                MethodNode clinit = new MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", null, null);
+                InsnList clinitInstructions = clinit.instructions;
+
+                for (String[] messageData : messages) {
+                    clinitInstructions.add(new LdcInsnNode(messageData[0]));
+                    clinitInstructions.add(new FieldInsnNode(Opcodes.PUTSTATIC, name, messageData[1], "Ljava/lang/String;"));
+                }
+
+                clinitInstructions.add(new InsnNode(Opcodes.RETURN));
+                classNode.methods.add(clinit);
+            }
+
             final ByteArrayOutputStream jarBufferStream = new ByteArrayOutputStream();
             try (JarOutputStream jarOutputStream = new JarOutputStream(jarBufferStream)) {
-                final ClassWrapper classWrapper = new ClassWrapper("Ambien.class", classNode);
-                IOUtil.writeEntry(jarOutputStream, "Ambien.class", classWrapper.toByteArray());
+                final ClassWrapper classWrapper = new ClassWrapper(name + ".class", classNode, false);
+                IOUtil.writeEntry(jarOutputStream, name + ".class", classWrapper.toByteArray());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
-            // Write buffer stream to main stream
             try {
                 stream.write(jarBufferStream.toByteArray());
             } catch (IOException e) {
