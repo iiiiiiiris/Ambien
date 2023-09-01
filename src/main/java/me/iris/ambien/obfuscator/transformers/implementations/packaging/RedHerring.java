@@ -40,9 +40,7 @@ public class RedHerring extends Transformer {
      * Adds junk data instead of a class file, this will result in a smaller jar when using this transformer
      */
     List<String> messagesList = new ArrayList<>(Arrays.asList(
-            "своего безглазого парнокопытного деда декомпиль, бездарность | you_need",
-            "лучше купи этот плагин) | to_train",
-            "дискорд: erxson#0 | more_bro"
+            "своего безглазого парнокопытного деда декомпиль, бездарность | you_need_to_train_more"
     ));
     public static BooleanSetting corrupt = new BooleanSetting("corrupt", false);
     public static StringSetting className = new StringSetting("class-name", "erxson");
