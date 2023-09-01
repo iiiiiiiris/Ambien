@@ -52,11 +52,6 @@ public class StringUtil {
         return StringUtil.randomString(len);
     }
 
-
-    public String repeat(final char c, final int len) {
-        return String.valueOf(c).repeat(Math.max(0, len));
-    }
-
     public String randomIllegalJavaName() {
         return ILLEGAL_JAVA_NAMES.get(ThreadLocalRandom.current().nextInt(0, ILLEGAL_JAVA_NAMES.size()));
     }
@@ -165,7 +160,7 @@ public class StringUtil {
         final List<Character> charList = IntStream
                 .range(0, CHARS.length)
                 .mapToObj(c -> CHARS[c])
-                .collect(Collectors.toList());
+                .toList();
         for (char c : str.toCharArray()) {
             if (charList.contains(c))
                 return true;

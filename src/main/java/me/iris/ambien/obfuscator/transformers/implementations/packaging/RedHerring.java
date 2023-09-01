@@ -39,11 +39,11 @@ public class RedHerring extends Transformer {
     /**
      * Adds junk data instead of a class file, this will result in a smaller jar when using this transformer
      */
-    List<String> messagesList = new ArrayList<>(Arrays.asList(
+    List<String> messagesList = new ArrayList<>(List.of(
             "своего безглазого парнокопытного деда декомпиль, бездарность | you_need_to_train_more"
     ));
     public static BooleanSetting corrupt = new BooleanSetting("corrupt", false);
-    public static StringSetting className = new StringSetting("class-name", "erxson");
+    public static StringSetting className = new StringSetting("class-name", "Main");
     public final ListSetting watermark = new ListSetting("text", messagesList);
 
     @Override

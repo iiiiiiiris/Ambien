@@ -2,7 +2,6 @@ package me.iris.ambien.obfuscator.transformers.implementations.flow;
 
 import com.google.common.base.Strings;
 import me.iris.ambien.obfuscator.myj2c.ASMUtils;
-import me.iris.ambien.obfuscator.settings.data.implementations.BooleanSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
@@ -35,7 +34,6 @@ import java.util.stream.Stream;
         description = "asdasd."
 )
 public class CaesiumReference extends Transformer {
-    public final BooleanSetting light = new BooleanSetting("light", false);
     private final Map<ClassWrapper, List<MethodWrapper>> classMethodsMap = new ConcurrentHashMap<>();
     private final SecureRandom random = new SecureRandom();
 
@@ -104,7 +102,7 @@ public class CaesiumReference extends Transformer {
         if (targetName.contains("$"))
             return;
 
-        wrapper.methods.stream()
+        wrapper.methods
                 .forEach(method -> {
                     InsnList instructions = method.instructions;
 
@@ -131,12 +129,8 @@ public class CaesiumReference extends Transformer {
                                 newSig = Type.getMethodDescriptor(origReturnType, args);
 
                                 switch (opcode) {
-                                    case INVOKEVIRTUAL:
-                                    case INVOKESTATIC:
-                                    case INVOKEINTERFACE:
+                                    case INVOKEVIRTUAL, INVOKESTATIC, INVOKEINTERFACE -> {
                                         Object[] params = new Object[4 + extraParamsCount];
-
-
                                         params[0] = extraParamsCount != 0 ? (opcode ^ opcodeRandomKey) : opcode;
                                         params[1] = base64Encode(insn.owner.replaceAll("/", ".").getBytes(), base64RandomTable, encryptionKey);
                                         params[2] = base64Encode(insn.name.getBytes(), base64RandomTable, encryptionKey);
@@ -145,18 +139,13 @@ public class CaesiumReference extends Transformer {
                                         // generate random parameter objects
                                         for (int i = 0; i < extraParamsCount; i++)
                                             params[4 + i] = getRandomObject();
-
                                         InvokeDynamicInsnNode invokeInsn = new InvokeDynamicInsnNode(StringUtil.genName(10), newSig, bootstrapMethodHandle, params);
-
                                         instructions.insert(insn, invokeInsn);
-
                                         if (origReturnType.getSort() == Type.ARRAY)
                                             instructions.insert(invokeInsn, new TypeInsnNode(CHECKCAST, origReturnType.getInternalName()));
-
                                         instructions.remove(insn);
                                         appliedInvoke.set(true);
-
-                                        break;
+                                    }
                                 }
                             });
                 });
@@ -218,17 +207,17 @@ public class CaesiumReference extends Transformer {
     }
 
     public String getRandomTable() {
-        String base = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-/";
-        List<Character> list = new ArrayList<Character>();
+        StringBuilder base = new StringBuilder("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-/");
+        List<Character> list = new ArrayList<>();
         for (int i = 0; i < base.length(); i++) {
             list.add(base.charAt(i));
         }
         Collections.shuffle(list);
-        base = "";
+        base = new StringBuilder();
         for (Character ch : list) {
-            base += ch;
+            base.append(ch);
         }
-        return base;
+        return base.toString();
     }
 
     /**
@@ -238,25 +227,25 @@ public class CaesiumReference extends Transformer {
      */
     private Object getRandomObject() {
         switch (random.nextInt(10)) {
-            case 0:
+            case 0 -> {
                 return random.nextLong();
-
-            case 1:
+            }
+            case 1 -> {
                 return random.nextInt();
-
-            case 2:
+            }
+            case 2 -> {
                 return StringUtil.genName(10);
-
-            case 3:
+            }
+            case 3 -> {
                 return random.nextFloat();
-
-            case 4:
+            }
+            case 4 -> {
                 return random.nextGaussian();
-
-            case 5:
+            }
+            case 5 -> {
                 return Float.floatToIntBits(random.nextFloat());
-
-            case 6: {
+            }
+            case 6 -> {
                 AtomicReference<String> s = new AtomicReference<>("");
 
                 IntStream.range(0, 5 + random.nextInt(20))
@@ -264,19 +253,18 @@ public class CaesiumReference extends Transformer {
 
                 return s.get();
             }
-
-            case 7: {
+            case 7 -> {
                 return (byte) random.nextInt(Byte.MAX_VALUE);
             }
-
-            case 8:
+            case 8 -> {
                 return random.nextDouble() * 20F;
-
-            case 9:
+            }
+            case 9 -> {
                 return base64Encode(StringUtil.genName(10).getBytes(), base64RandomTable, (byte) 0);
-
-            case 10:
+            }
+            case 10 -> {
                 return -Math.abs(random.nextInt());
+            }
         }
 
         return 0;

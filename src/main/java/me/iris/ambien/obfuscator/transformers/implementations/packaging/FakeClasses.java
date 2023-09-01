@@ -24,7 +24,7 @@ import org.objectweb.asm.tree.ClassNode;
 public class FakeClasses extends Transformer {
     public final NumberSetting<Integer> classes = new NumberSetting<>("classes", 50);
     public final StringSetting dictionary = new StringSetting("dictionary", "random");
-    public final StringSetting prefix = new StringSetting("prefix", "erxson_");
+    public final StringSetting prefix = new StringSetting("prefix", "");
 
     @Override
     public void transform(JarWrapper wrapper) {

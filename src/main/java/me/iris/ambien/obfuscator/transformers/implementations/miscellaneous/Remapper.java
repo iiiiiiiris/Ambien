@@ -36,7 +36,7 @@ public class Remapper extends Transformer {
      * barcode ~ Example: IllllIIIIlIlIIll
      */
     public final StringSetting dictionary = new StringSetting("dictionary", "random");
-    public final StringSetting prefix = new StringSetting("prefix", "erxson_");
+    public final StringSetting prefix = new StringSetting("prefix", "");
 
     @Override
     public void transform(JarWrapper wrapper) {

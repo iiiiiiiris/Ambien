@@ -1,32 +1,11 @@
 package me.iris.ambien.obfuscator.myj2c;
 
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.commons.CodeSizeEvaluator;
 import org.objectweb.asm.tree.*;
-
-import java.util.Arrays;
 
 public class ASMUtils implements Opcodes {
 
     private ASMUtils() {
-    }
-
-    public static class BuiltInstructions {
-        public static InsnList getPrintln(String s) {
-            final InsnList insnList = new InsnList();
-            insnList.add(new FieldInsnNode(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-            insnList.add(new LdcInsnNode(s));
-            insnList.add(new MethodInsnNode(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"));
-            return insnList;
-        }
-
-        public static InsnList getThrowNull() {
-            final InsnList insnList = new InsnList();
-            insnList.add(new InsnNode(ACONST_NULL));
-            insnList.add(new InsnNode(ATHROW));
-            return insnList;
-        }
     }
 
     public static boolean isClassEligibleToModify(ClassNode classNode) {
@@ -36,12 +15,6 @@ public class ASMUtils implements Opcodes {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isMethodEligibleToModify(ClassNode classNode, MethodNode methodNode) {
         return isClassEligibleToModify(classNode) && (methodNode.access & ACC_ABSTRACT) == 0;
-    }
-
-    public static byte[] toByteArrayDefault(ClassNode classNode) {
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        classNode.accept(classWriter);
-        return classWriter.toByteArray();
     }
 
     public static String getName(ClassNode classNode) {
@@ -54,22 +27,6 @@ public class ASMUtils implements Opcodes {
 
     public static String getName(ClassNode classNode, MethodNode methodNode) {
         return classNode.name + "." + methodNode.name + methodNode.desc;
-    }
-
-    public static InsnList arrayToList(AbstractInsnNode[] insns) {
-        final InsnList insnList = new InsnList();
-        Arrays.stream(insns).forEach(insnList::add);
-        return insnList;
-    }
-
-    public static boolean isMethodSizeValid(MethodNode methodNode) {
-        return getCodeSize(methodNode) <= 65536;
-    }
-
-    public static int getCodeSize(MethodNode methodNode) {
-        CodeSizeEvaluator cse = new CodeSizeEvaluator(null);
-        methodNode.accept(cse);
-        return cse.getMaxSize();
     }
 
     public static MethodNode findOrCreateInit(ClassNode classNode) {
@@ -108,42 +65,10 @@ public class ASMUtils implements Opcodes {
         return insn.getOpcode() >= GETSTATIC && insn.getOpcode() <= PUTFIELD;
     }
 
-    public static boolean isIf(AbstractInsnNode insn) {
-        int op = insn.getOpcode();
-        return (op >= IFEQ && op <= IF_ACMPNE) || op == IFNULL || op == IFNONNULL;
-    }
-
     public static AbstractInsnNode pushLong(long value) {
         if (value == 0) return new InsnNode(LCONST_0);
         else if (value == 1) return new InsnNode(LCONST_1);
         else return new LdcInsnNode(value);
-    }
-
-    public static boolean isPushLong(AbstractInsnNode insn) {
-        try {
-            getPushedLong(insn);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public static long getPushedLong(AbstractInsnNode insn) throws IllegalArgumentException {
-        IllegalArgumentException ex = new IllegalArgumentException("Insn is not a push long instruction");
-        switch (insn.getOpcode()) {
-            case LCONST_0:
-                return 0;
-            case LCONST_1:
-                return 1;
-            case LDC: {
-                Object cst = ((LdcInsnNode) insn).cst;
-                if (cst instanceof Long)
-                    return (Long) cst;
-                throw ex;
-            }
-            default:
-                throw ex;
-        }
     }
 
     public static AbstractInsnNode pushInt(int value) {
@@ -159,38 +84,4 @@ public class ASMUtils implements Opcodes {
         return new LdcInsnNode(value);
     }
 
-    public static boolean isPushInt(AbstractInsnNode insn) {
-        try {
-            getPushedInt(insn);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public static int getPushedInt(AbstractInsnNode insn) throws IllegalArgumentException {
-        IllegalArgumentException ex = new IllegalArgumentException("Insn is not a push int instruction");
-        int op = insn.getOpcode();
-        switch (op) {
-            case ICONST_M1:
-            case ICONST_0:
-            case ICONST_1:
-            case ICONST_2:
-            case ICONST_3:
-            case ICONST_4:
-            case ICONST_5:
-                return (op - ICONST_0);
-            case BIPUSH:
-            case SIPUSH:
-                return ((IntInsnNode) insn).operand;
-            case LDC: {
-                Object cst = ((LdcInsnNode) insn).cst;
-                if (cst instanceof Integer)
-                    return (int) cst;
-                throw ex;
-            }
-            default:
-                throw ex;
-        }
-    }
 }

@@ -65,8 +65,10 @@ public class ReferenceHider extends Transformer {
                                 // Make sure the owner is loaded
                                 boolean isOwnerLoaded = false;
                                 for (ClassWrapper classWrapper1 : wrapper.getClasses()) {
-                                    if (classWrapper1.getNode().name.equals(insn.owner))
+                                    if (classWrapper1.getNode().name.equals(insn.owner)) {
                                         isOwnerLoaded = true;
+                                        break;
+                                    }
                                 }
                                 if (!isOwnerLoaded) {
                                     Ambien.LOGGER.debug("owner not loaded: " + insn.owner);

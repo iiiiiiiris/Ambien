@@ -5,7 +5,6 @@ import me.iris.ambien.obfuscator.asm.SizeEvaluator;
 import me.iris.ambien.obfuscator.builders.FieldBuilder;
 import me.iris.ambien.obfuscator.builders.MethodBuilder;
 import me.iris.ambien.obfuscator.settings.data.implementations.ListSetting;
-import me.iris.ambien.obfuscator.settings.data.implementations.StringSetting;
 import me.iris.ambien.obfuscator.transformers.data.Category;
 import me.iris.ambien.obfuscator.transformers.data.Ordinal;
 import me.iris.ambien.obfuscator.transformers.data.Stability;
@@ -83,8 +82,7 @@ public class StringEncryption extends Transformer {
                         .map(insn -> (LdcInsnNode)insn)
                         .forEach(ldc -> {
                             // check if the ldc is a string
-                            if (!(ldc.cst instanceof String)) return;
-                            final String origString = (String)ldc.cst;
+                            if (!(ldc.cst instanceof String origString)) return;
 
                             // Check if the string is blacklisted
                             if (stringBlacklist.getOptions().contains(origString)) return;

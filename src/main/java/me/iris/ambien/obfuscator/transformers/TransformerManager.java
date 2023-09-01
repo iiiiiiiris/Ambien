@@ -1,6 +1,5 @@
 package me.iris.ambien.obfuscator.transformers;
 
-import me.iris.ambien.obfuscator.mosey.MoseyStringEncryption;
 import me.iris.ambien.obfuscator.transformers.data.Transformer;
 import me.iris.ambien.obfuscator.transformers.implementations.data.*;
 import me.iris.ambien.obfuscator.transformers.implementations.exploits.*;
@@ -33,7 +32,6 @@ public class TransformerManager {
                 new StringEncryption(),
                 new SouvenirStringEncryption(),
                 new ColonialStringEncryption(),
-//                new MoseyStringEncryption(),
                 new Shuffle(),
                 new XorBooleans(),
 

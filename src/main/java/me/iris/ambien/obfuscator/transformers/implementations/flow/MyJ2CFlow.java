@@ -113,8 +113,8 @@ public class MyJ2CFlow extends Transformer {
     }
 
     protected static final class SwitchBlock {
-        private LabelNode labelNode;
-        private InsnList insnList;
+        private final LabelNode labelNode;
+        private final InsnList insnList;
 
         public SwitchBlock() {
             this.labelNode = new LabelNode();

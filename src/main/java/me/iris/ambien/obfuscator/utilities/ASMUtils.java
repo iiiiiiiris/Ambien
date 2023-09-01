@@ -66,11 +66,7 @@ public class ASMUtils {
             return true;
         }
 
-        if (node instanceof LdcInsnNode && ((LdcInsnNode) node).cst instanceof Number) {
-            return true;
-        }
-
-        return false;
+        return node instanceof LdcInsnNode && ((LdcInsnNode) node).cst instanceof Number;
     }
 
     public static AbstractInsnNode createNumberNode(int value) {

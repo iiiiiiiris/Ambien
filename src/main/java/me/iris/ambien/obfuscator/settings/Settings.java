@@ -144,8 +144,7 @@ public class Settings {
                         ((BooleanSetting)setting).setEnabled(element.getAsBoolean());
                     else if (setting instanceof StringSetting)
                         ((StringSetting)setting).setValue(element.getAsString());
-                    else if (setting instanceof NumberSetting) {
-                        final NumberSetting numberSetting = (NumberSetting)setting;
+                    else if (setting instanceof NumberSetting numberSetting) {
                         if (numberSetting.getValue() instanceof Integer)
                             numberSetting.setValue(element.getAsInt());
                         else if (numberSetting.getValue() instanceof Long)

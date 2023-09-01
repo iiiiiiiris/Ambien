@@ -13,26 +13,13 @@ public class InsnBuilder {
         this.insnList = new InsnList();
     }
 
-    private InsnBuilder(InsnList insnList) {
-        this.insnList = insnList;
-    }
-
     public InsnBuilder insn(AbstractInsnNode... insnNodes) {
         Arrays.stream(insnNodes).forEach(this.insnList::add);
         return this;
     }
 
-    public InsnBuilder insnList(InsnList... insnLists) {
-        Arrays.stream(insnLists).forEach(this.insnList::add);
-        return this;
-    }
-
     public InsnList getInsnList() {
         return insnList;
-    }
-
-    public static InsnBuilder create(InsnList insnList) {
-        return new InsnBuilder(insnList);
     }
 
     public static InsnBuilder createEmpty() {

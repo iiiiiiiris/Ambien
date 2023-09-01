@@ -15,11 +15,6 @@ public class XorEncryption implements IStringEncryptionMethod {
     }
 
     @Override
-    public String decrypt(String v, int key) {
-        return encrypt(v, key);
-    }
-
-    @Override
     public MethodNode createDecrypt(String name) {
         MethodNode methodVisitor = new MethodNode(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, name, "(Ljava/lang/String;I)Ljava/lang/String;", null, null);
         methodVisitor.visitCode();

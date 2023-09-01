@@ -12,8 +12,6 @@ public class BytecodeHelper {
                                                             Consumer<T> consumer) {
         AbstractInsnNode[] array = instructions.toArray();
         for (AbstractInsnNode node : array) {
-//            if (node != null && node.getClass() == type) {
-
             if (node.getClass() == type) {
                 //noinspection unchecked
                 consumer.accept((T) node);
